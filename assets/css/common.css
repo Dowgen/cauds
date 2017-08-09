@@ -1,0 +1,41 @@
+@CHARSET "UTF-8";
+[v-cloak] {
+  display: none;
+}
+html{
+	height: 100%;
+}
+body {
+    min-width: 1240px;
+    height: inherit;
+    word-break: break-all;
+    word-wrap: break-word;
+}
+.row, #nav-left, #myScrollspy{
+	height: inherit;
+}
+p {
+    margin: 0;
+}
+
+a {
+    color: #95A0AA;
+    text-align: center;
+}
+
+#myScrollspy{
+    background: #222;
+    padding: 0; 
+}
+.nav-pills>li>a {
+    border-radius: 0px;
+}
+#myScrollspy>ul a:focus, #myScrollspy>ul a:hover {
+    color: #fff;
+    background-color: #1FB5AD;
+
+}
+.navClicked{
+	color: #fff !important;
+    background-color: #1FB5AD;
+}
