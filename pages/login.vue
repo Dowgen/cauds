@@ -8,8 +8,8 @@
         </div>
       </div>
       <div class="right">
-        <input v-model="account" placeholder="请输入账号">
-        <input v-model="code" placeholder="请输入密码">
+        <!-- <input v-model="account" placeholder="请输入账号">
+        <input v-model="code" placeholder="请输入密码"> -->
         <div class="regist" @click="submit">登录</div>
         <div class="forget">忘记密码?</div>
       </div>
@@ -30,6 +30,33 @@
     },
     created: function () {
       var that = this;
+      axios({
+        method: 'post',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': 'Basic Y2xpZW50OnNlY3JldA=='
+        },
+        url: 'http://192.168.1.158:8060/uaa/oauth/token',
+        data: {
+          password: '111122',
+          username: 'test',
+          grant_type: 'password',
+          scope: 'read write'
+        },
+        transformRequest: [function (data) {
+          let ret = ''
+          for (let it in data) {
+            ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+          }
+          return ret
+        }],
+      })
+      .then(function (response) {
+        console.log(response);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
 //      $.ajax({
 //        headers: {
 //          Accept: "application/json",
@@ -62,11 +89,11 @@
       }
     },
     methods: {
-      showMode(){
+      showMode (){
         this.basicStatus = false;
         this.modeStatus = true;
       },
-      submit: function () {
+      submit () {
         var that = this;
 //        if (that.account == '' || that.code == '') {
 //          alert('请输入账号密码');

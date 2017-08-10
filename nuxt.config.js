@@ -18,6 +18,9 @@ module.exports = {
       { rel: 'stylesheet', href: 'https://cdn.staticfile.org/font-awesome/4.7.0/css/font-awesome.min.css'},
     ]
   },
+/*  plugins: [
+    { src: '~plugins/axios.js' }
+  ],*/
   /*
   ** Global CSS
   */
