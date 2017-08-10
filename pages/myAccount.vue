@@ -23,10 +23,17 @@
         <div class="title">基本信息</div>
         <div class="top">
           <div class="subtitle">个人信息</div>
-          <div class="avatar">
+<!--           <div class="avatar" @click="">
+  <div class="name">头像</div>
+  <div class="img-wrapper">
+    <img src="/img/assets/product-logo.png">
+    <div class="text">更改头像</div>
+  </div>
+</div> --><div class="avatar">
             <div class="name">头像</div>
             <div class="img-wrapper">
-              <img src="/img/assets/product-logo.png">
+              <img src="/img/assets/product-logo.png"/>
+              <input id="upfile" type="file" name="upfile" multiple="multiple" accept="image/png,image/jpg" class="accept" @change='uploadImg'>
               <div class="text">更改头像</div>
             </div>
           </div>
@@ -141,10 +148,47 @@
         newCodeRepeat:''
       }
     },
+    created(){
+      this.getToken();
+    },
     mount: function () {
       this.router=location.href.substring(location.href.length-1);
     },
     methods: {
+      getToken(){
+        var that = this;
+        axios({
+          method:'post',
+          url:'http://192.168.1.158:8060/uaa/oauth/token',
+          headers: {
+            'Accept': "application/json",
+            'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
+          },
+          data: {
+            password: '111122',
+            username: 'test',
+            grant_type: 'password',
+            scope: 'read write'
+          },
+          transformRequest: [function (data) {
+            let ret = ''
+            for (let it in data) {
+              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+            }
+            return ret
+          }],
+        })
+        .then(function(response) {
+          that.token = response.data.access_token;
+          console.log(that.token);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+      },
+      changeAvatar(){
+
+      },
       modifyCode(){
         this.codeStatus=true;
       },
@@ -244,7 +288,16 @@
     align-items:center;
     margin-bottom:40px;
   }
+  #upfile{
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    opacity: 0;
+  }
   #body .top .avatar .img-wrapper{
+    position:relative;
     text-align:center;
     font-size:14px;
     color:#1fb5ad;
