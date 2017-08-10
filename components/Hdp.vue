@@ -16,7 +16,7 @@
             <a href="/myAccount?navChose=1" >
             <img src="img/assets/User-Profile_normal.png">认证接口</a>
         </li>
-        <li><a href="${pageContext.request.contextPath}/w/creditUser/login">
+        <li><a href="/login">
             <img src="/img/assets/loginout.png">登出</a>
 
         </li>
