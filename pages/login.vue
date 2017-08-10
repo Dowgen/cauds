@@ -122,7 +122,6 @@
     background:url('/img/assets/bg_img.png') no-repeat;
     background-size: 100% 100%;
   }
-
   .row .register-box{
     width:730px;
     height:504px;
@@ -155,7 +154,6 @@
     height:100%;
     padding:128px 40px 0;
     box-sizing:border-box;
-
   }
   .row .register-box .right input{
     width:354px;
