@@ -1,24 +1,24 @@
 <template>
 <div class="dropdown">
 
-    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1" 
+    <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1"
      data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
      <span>{{name}}</span>
         <span class="caret"></span>
     </button>
     <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu1">
         <li>
-            <a href="${pageContext.request.contextPath}/w/creditUser/request/myAccount?navChose=0">
-            <img src="${ctxStatic}/credit/img/assets/Home_normal.png">基本信息</a>
+            <a href="/myAccount?navChose=0">
+            <img src="/img/assets/Home_normal.png">基本信息</a>
         </li>
         <li>
-            
-            <a href="${pageContext.request.contextPath}/w/creditUser/request/myAccount?navChose=1" >
-            <img src="${ctxStatic}/credit/img/assets/User-Profile_normal.png">认证接口</a>
+
+            <a href="/myAccount?navChose=1" >
+            <img src="img/assets/User-Profile_normal.png">认证接口</a>
         </li>
         <li><a href="${pageContext.request.contextPath}/w/creditUser/login">
-            <img src="${ctxStatic}/credit/img/assets/loginout.png">登出</a>
-        
+            <img src="/img/assets/loginout.png">登出</a>
+
         </li>
         <!-- <li role="separator" class="divider"></li> -->
     </ul>
