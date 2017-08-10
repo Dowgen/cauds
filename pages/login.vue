@@ -29,7 +29,7 @@
       ]
     },
     created: function () {
-      var that = this;
+        this.getToken();
 //      $.ajax({
 //        headers: {
 //          Accept: "application/json",
@@ -55,19 +55,81 @@
 
     data () {
       return {
-        basicStatus: true,
-        modeStatus: false,
-        apiAdress: false,
-        picked: '',
+        account:'',
+        code:'',
+        token:''
       }
     },
     methods: {
+      getToken(){
+        var that = this;
+        axios({
+          method:'post',
+          url:'http://192.168.1.158:8060/uaa/oauth/token',
+          headers: {
+            'Accept': "application/json",
+            'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
+          },
+          data: {
+            password: '111122',
+            username: 'test',
+            grant_type: 'password',
+            scope: 'read write'
+          },
+          transformRequest: [function (data) {
+            let ret = ''
+            for (let it in data) {
+              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+            }
+            return ret
+          }],
+        })
+          .then(function(response) {
+            that.token = response.data.access_token;
+            console.log(that.token);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      },
       showMode(){
         this.basicStatus = false;
         this.modeStatus = true;
       },
       submit: function () {
         var that = this;
+        if (that.account == '' || that.code == '') {
+          alert('请输入账号密码');
+        } else {
+        axios({
+          method:'get',
+          url:"http://192.168.1.158:8060/cauds-account/user/account/login/" + that.account + '/' + that.code,
+          headers: {
+            Authorization: 'Bearer ' + that.token
+          },
+          data: {
+          },
+          transformRequest: [function (data) {
+            let ret = ''
+            for (let it in data) {
+              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+            }
+            return ret
+          }],
+        })
+          .then(function(response) {
+              console.log(response)
+            if (response.data.code == 200) {
+              /* console.log(response.data.userInfo); */
+              localStorage.data = JSON.stringify(response.data);
+              console.log(JSON.parse(localStorage.data));
+              location.href = '/apiDetail'
+            }
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+                }
 //        if (that.account == '' || that.code == '') {
 //          alert('请输入账号密码');
 //        } else {
