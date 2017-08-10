@@ -30,27 +30,6 @@
     },
     created: function () {
         this.getToken();
-//      $.ajax({
-//        headers: {
-//          Accept: "application/json",
-//          Authorization: "Basic Y2xpZW50OnNlY3JldA=="
-//        },
-//        type: "post",
-//        url: "http://192.168.1.158:8060/uaa/oauth/token",
-//        data: {
-//          password: '111122',
-//          username: 'test',
-//          grant_type: 'password',
-//          scope: 'read write'
-//        },
-//        success: function (data) {
-//          that.token = data.access_token;
-//          console.log(that.token);
-//        },
-//        error: function (data) {
-//          console.log(data)
-//        }
-//      });
     },
 
     data () {
@@ -130,29 +109,6 @@
             console.log(error);
           });
         }
-//        if (that.account == '' || that.code == '') {
-//          alert('请输入账号密码');
-//        } else {
-//          $.ajax({
-//            headers: {
-//              Authorization: 'Bearer ' + that.token
-//            },
-//            type: "get",
-//            url: "http://192.168.1.158:8060/cauds-account/user/account/login/" + that.account + '/' + that.code,
-//            data: {},
-//            success: function (data) {
-//              if (data.code == 200) {
-//                /* console.log(data.data.userInfo); */
-//                localStorage.data = JSON.stringify(data.data);
-//                console.log(JSON.parse(localStorage.data));
-//                location.href = '${pageContext.request.contextPath}/w/creditUser/request/apiDetail'
-//              }
-//            },
-//            error: function (data) {
-//              console.log(data);
-//            }
-//          });
-//        }
       }
     }
   }

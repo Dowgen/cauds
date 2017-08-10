@@ -127,32 +127,35 @@
     head: {
       title: '账户信息',
       script: [
-        { src: 'js/jQuery.min.js' },
-        { src: 'js/layer.js' },
-        { src: 'js/bootstrap.min.js' }
+        {src: 'js/jQuery.min.js'},
+        {src: 'js/layer.js'},
+        {src: 'js/bootstrap.min.js'}
       ]
+    },
+    created: function () {
+      this.getToken();
     },
     data () {
       return {
         router: '',
-        codeStatus:false,
-        toggleText:"查看",
-        text:'********',
-        modifyNameStatus:false,
-        companyName:'杭州玛瑙湾投资金融服务有限公司',
-        realCompanyName:'',
-        token:'',
-        information:{},
-        oldCode:'',
-        newCode:'',
-        newCodeRepeat:''
+        codeStatus: false,
+        toggleText: "查看",
+        text: '********',
+        modifyNameStatus: false,
+        companyName: '杭州玛瑙湾投资金融服务有限公司',
+        realCompanyName: '',
+        token: '',
+        information: {},
+        oldCode: '',
+        newCode: '',
+        newCodeRepeat: ''
       }
     },
     created(){
       this.getToken();
     },
     mount: function () {
-      this.router=location.href.substring(location.href.length-1);
+      this.router = location.href.substring(location.href.length - 1);
     },
     methods: {
       getToken(){
@@ -190,28 +193,28 @@
 
       },
       modifyCode(){
-        this.codeStatus=true;
+        this.codeStatus = true;
       },
       back() {
-        this.codeStatus=false;
+        this.codeStatus = false;
       },
       toggleCode() {
-        if(this.text=='********'){
-          this.text="jiangyangchang";
-          this.toggleText="收起"
-        }else{
-          this.text="********";
-          this.toggleText="查看"
+        if (this.text == '********') {
+          this.text = "jiangyangchang";
+          this.toggleText = "收起"
+        } else {
+          this.text = "********";
+          this.toggleText = "查看"
         }
       },
       modifyName() {
-        this.companyName=this.realCompanyName;
-        this.modifyNameStatus=true;
+        this.companyName = this.realCompanyName;
+        this.modifyNameStatus = true;
       },
       saveName() {
-        this.realCompanyName=this.companyName;
-        this.modifyNameStatus=false;
-        var that=this;
+        this.realCompanyName = this.companyName;
+        this.modifyNameStatus = false;
+        var that = this;
 //        var json = {
 //          "account":that.information.account,
 //          "org_name":that.realCompanyName
@@ -235,32 +238,62 @@
 //          }
 //        });
       },
-      cancelName() {
-        this.modifyNameStatus=false;
-      },
-      getInformation: function(){
+      getToken(){
         var that = this;
-//        $.ajax({
-//          headers: {
-//            sessionId:JSON.parse(localStorage.data).sessionId,
-//            authKey:JSON.parse(localStorage.data).authKey
-//          },
-//          type: "get",
-//          url: "http://192.168.1.158:8060/cauds-account/user/account/accountInfo/"+JSON.parse(localStorage.data).userInfo.account,
-//          data: {
-//
-//          },
-//          success: function (data) {
-//            that.information=data.data;
-//            that.realCompanyName=that.information.org_name;
-//          },
-//          error: function (data) {
-//            console.log(data);
-//          }
-//        });
+        axios({
+          method: 'post',
+          url: 'http://192.168.1.158:8060/uaa/oauth/token',
+          headers: {
+            'Accept': "application/json",
+            'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
+          },
+          data: {
+            password: '111122',
+            username: 'test',
+            grant_type: 'password',
+            scope: 'read write'
+          },
+          transformRequest: [function (data) {
+            let ret = ''
+            for (let it in data) {
+              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+            }
+            return ret
+          }],
+        })
+          .then(function (response) {
+            that.token = response.data.access_token;
+            that.getInformation();
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      },
+      cancelName() {
+        this.modifyNameStatus = false;
+      },
+      getInformation() {
+        var that=this;
+        axios({
+          method: 'get',
+          url: "http://192.168.1.158:8060/cauds-account/user/account/accountInfo/" + JSON.parse(localStorage.data).data.userInfo.account,
+          headers: {
+            sessionId: JSON.parse(localStorage.data).data.sessionId,
+            authKey: JSON.parse(localStorage.data).data.authKey
+          }
+        })
+          .then(function(response) {
+            console.log(response);
+            that.information=response.data.data;
+            that.realCompanyName=that.information.org_name;
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
       }
     }
   }
+
 </script>
 <style scoped lang="stylus" rel="stylesheet/stylus">
   #myScrollspy{
