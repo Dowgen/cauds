@@ -181,38 +181,6 @@
       this.router = location.href.substring(location.href.length - 1);
     },
     methods: {
-      getToken(){
-        var that = this;
-        axios({
-          method:'post',
-          url:'http://192.168.1.158:8060/uaa/oauth/token',
-          headers: {
-            'Accept': "application/json",
-            'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
-          },
-          data: {
-            password: 'password',
-            username: 'anil',
-            grant_type: 'password',
-            scope: 'read write'
-          },
-          transformRequest: [function (data) {
-            let ret = ''
-            for (let it in data) {
-              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
-            }
-            return ret
-          }],
-        })
-        .then(function(response) {
-          that.token = response.data.access_token;
-          that.getInformation();
-          console.log(that.token);
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-      },
       uploadImg() {
         var that = this;
         var data = JSON.parse(localStorage.data).data;
@@ -343,6 +311,37 @@
           .catch(function (error) {
             console.log(error);
           });
+      },
+      getToken(){
+        var that = this;
+        axios({
+          method: 'post',
+          url: 'http://192.168.1.158:8060/uaa/oauth/token',
+          headers: {
+            'Accept': "application/json",
+            'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
+          },
+          data: {
+            password: 'password',
+            username: 'anil',
+            grant_type: 'password',
+            scope: 'read write'
+          },
+          transformRequest: [function (data) {
+            let ret = ''
+            for (let it in data) {
+              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+            }
+            return ret
+          }],
+        })
+        .then(function (response) {
+          that.token = response.data.access_token;
+          that.getInformation();
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
       },
       cancelName() {
         this.modifyNameStatus = false;

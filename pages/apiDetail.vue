@@ -27,97 +27,28 @@
           <input placeholder="请输入关键字" size="10" >
           <img src="/img/assets/Search.png">
         </div>
-        <div class="productList">
-          <div class="product">
+        <div class="productList" >
+          <div class="product" v-for="item in assetList" @click="jump(item)">
             <div class="product-top">
               <img src="/img/assets/product-logo.png">
               <div class="top-right">
-                <div class="title">聚抵信49873</div>
-                <div class="product-id">ID:JDX489973</div>
+                <div class="title">{{item.assetName}}</div>
+                <div class="product-id">ID:{{item.assetId}}</div>
               </div>
             </div>
             <div class="product-bottom">
               <div class="left">
-                <div class="text">资产规模：<span class="number">1000万</span></div>
-                <div class="text">代缴资产：<span class="number">230000万</span></div>
-                <div class="text">资产周期：<span class="number">15天</span></div>
+                <div class="text">资产规模：<span class="number">{{item.assetSize}}万</span></div>
+                <div class="text">代缴资产：<span class="number">{{item.assetsPaid}}万</span></div>
+                <div class="text">资产周期：<span class="number">{{item.assetCycle}}天</span></div>
               </div>
               <div class="right">
                 <svg width="80" height="80" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
                   <circle class="progress-background" r="50" cx="50" cy="50" fill="transparent"/>
                   <circle class="progress-bar" r="50" cx="50" cy="50" fill="transparent" :stroke-dasharray="dashArray"
-                          :stroke-dashoffset="dashOffset"/>
+                          :stroke-dashoffset="(1-item.assetsPaid/item.assetSize)*dashArray"/>
                 </svg>
-                <div class="percent">50%
-                  <div class="text">占总比</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="product">
-            <div class="product-top">
-              <img src="/img/assets/product-logo.png">
-              <div class="title">聚抵信49873</div>
-            </div>
-            <div class="product-bottom">
-              <div class="left">
-                <div class="text">资产规模：<span class="number">1000万</span></div>
-                <div class="text">代缴资产：<span class="number">230000万</span></div>
-                <div class="text">资产周期：<span class="number">15天</span></div>
-              </div>
-              <div class="right">
-                <svg width="80" height="80" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                  <circle class="progress-background" r="50" cx="50" cy="50" fill="transparent"/>
-                  <circle class="progress-bar" r="50" cx="50" cy="50" fill="transparent" :stroke-dasharray="dashArray"
-                          :stroke-dashoffset="dashOffset"/>
-                </svg>
-                <div class="percent">50%
-                  <div class="text">占总比</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="product">
-            <div class="product-top">
-              <img src="/img/assets/product-logo.png">
-              <div class="title">聚抵信49873</div>
-            </div>
-            <div class="product-bottom">
-              <div class="left">
-                <div class="text">资产规模：<span class="number">1000万</span></div>
-                <div class="text">代缴资产：<span class="number">230000万</span></div>
-                <div class="text">资产周期：<span class="number">15天</span></div>
-              </div>
-              <div class="right">
-                <svg width="80" height="80" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                  <circle class="progress-background" r="50" cx="50" cy="50" fill="transparent"/>
-                  <circle class="progress-bar" r="50" cx="50" cy="50" fill="transparent" :stroke-dasharray="dashArray"
-                          :stroke-dashoffset="dashOffset"/>
-                </svg>
-                <div class="percent">50%
-                  <div class="text">占总比</div>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div class="product">
-            <div class="product-top">
-              <img src="/img/assets/product-logo.png">
-              <div class="title">聚抵信49873</div>
-            </div>
-            <div class="product-bottom">
-              <div class="left">
-                <div class="text">资产规模：<span class="number">1000万</span></div>
-                <div class="text">代缴资产：<span class="number">230000万</span></div>
-                <div class="text">资产周期：<span class="number">15天</span></div>
-              </div>
-              <div class="right">
-                <svg width="80" height="80" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
-                  <circle class="progress-background" r="50" cx="50" cy="50" fill="transparent"/>
-                  <circle class="progress-bar" r="50" cx="50" cy="50" fill="transparent" :stroke-dasharray="dashArray"
-                          :stroke-dashoffset="dashOffset"/>
-                </svg>
-                <div class="percent">50%
+                <div class="percent">{{getPercent(item.assetsPaid,item.assetSize)}}%
                   <div class="text">占总比</div>
                 </div>
               </div>
@@ -149,14 +80,78 @@
     },
     data () {
       return {
-        dashArray: Math.PI * 100
+        dashArray: Math.PI * 100,
+        token:'',
+        assetList:[]
       }
     },
+    created: function () {
+      this.getToken();
+    },
     methods: {
+      jump(item){
+        sessionStorage.product = JSON.stringify(item);
+        location.href='/productDetail'
+      },
+      getPercent(x,y){
+        return (x/y*100).toFixed(1)
+      },
+      getToken(){
+        var that = this;
+        axios({
+          method:'post',
+          url:'http://192.168.1.158:8060/uaa/oauth/token',
+          headers: {
+            'Accept': "application/json",
+            'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
+          },
+          data: {
+            password: 'password',
+            username: 'anil',
+            grant_type: 'password',
+            scope: 'read write'
+          },
+          transformRequest: [function (data) {
+            let ret = ''
+            for (let it in data) {
+              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+            }
+            return ret
+          }],
+        })
+          .then(function(response) {
+            that.token = response.data.access_token;
+            console.log(that.token);
+            that.getAllAsset();
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      },
+      getAllAsset(){
+        var that = this;
+        axios({
+          method:'get',
+          url:"http://192.168.1.158:8060/cauds-exchange/asset/all",
+          headers: {
+            Authorization: 'Bearer ' + that.token,
+            Accept:'application/json'
+          },
+          data: {
+          },
+        })
+          .then(function(response) {
+            that.assetList=response.data
+            console.log(that.assetList)
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      }
     },
     computed: {
       dashOffset() {
-        return (1 - 0.5) * this.dashArray
+        return (1 - 0.8) * this.dashArray
       }
     },
   }
@@ -353,7 +348,7 @@
     margin-bottom:0px;
   }
   #body .productList .product .product-top .product-id{
-    font-size:14px;
+    font-size:12px;
     color:#1fb5ad;
   }
   #body .productList .product .product-bottom{
@@ -385,11 +380,15 @@
     stroke: #FA7252;
   }
   #body .productList .product .product-bottom .right .percent{
+    text-align center
+    width 48px
+    height 49px
     font-size:21px;
     color:#FA7252;
     position:absolute;
     top:15px;
-    left:20px;
+    left:50%;
+    margin-left -24px
   }
   #body .productList .product .product-bottom .right .percent .text{
     font-size:12px;

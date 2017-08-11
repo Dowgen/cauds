@@ -32,22 +32,22 @@
             <div class="left">
               <img src="/img/assets/product-logo.png">
               <div class="content">
-                <div class="title">聚抵信49873</div>
-                <div class="time">注册时间：2017-07-19</div>
-                <div class="product-id">ID:JDX489973</div>
+                <div class="title">{{product.assetName}}</div>
+                <div class="time">注册时间：{{product.createTime}}</div>
+                <div class="product-id">ID:{{product.assetId}}</div>
               </div>
             </div>
             <div class="middle">
               <div class="amount">
-                <div class="number">1000</div>
+                <div class="number">{{product.assetSize}}</div>
                 <div class="text">资产总额（万元）</div>
               </div>
               <div class="pay">
-                <div class="number">23.4</div>
+                <div class="number">{{product.assetsPaid}}</div>
                 <div class="text">代缴金额（万元）</div>
               </div>
               <div class="time">
-                <div class="number">15</div>
+                <div class="number">{{product.assetCycle}}</div>
                 <div class="text">资产周期（天）</div>
               </div>
             </div>
@@ -55,9 +55,9 @@
               <svg width="150" height="150" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
                 <circle class="progress-background" r="50" cx="50" cy="50" fill="transparent"/>
                 <circle class="progress-bar" r="50" cx="50" cy="50" fill="transparent" :stroke-dasharray="dashArray"
-                        :stroke-dashoffset="dashOffset"/>
+                        :stroke-dashoffset="(1-product.assetsPaid/product.assetSize)*dashArray"/>
               </svg>
-              <div class="percent">58%</div>
+              <div class="percent">{{product.assetsPaid/product.assetSize*100}}%</div>
             </div>
           </div>
           <div class="trade">
@@ -65,27 +65,20 @@
             <table class="table table-striped table-hover">
               <thead>
               <tr>
-                <th>资产编号</th>
                 <th>订单号</th>
+                <th>放款金额</th>
                 <th>更新时间</th>
                 <th>交易状态</th>
                 <th>查看详情</th>
               </tr>
               </thead>
               <tbody>
-              <tr>
-                <td>Bangalore</td>
-                <td>Bangalore</td>
-                <td>Bangalore</td>
-                <td>Bangalore</td>
-                <td><span class="text" data-toggle="modal" data-target="#myModal">查看</span></td>
-              </tr>
-              <tr>
-                <td>Sachin</td>
-                <td>Mumbai</td>
-                <td>Bangalore</td>
-                <td>Bangalore</td>
-                <td><span class="text">查看</span></td>
+              <tr v-for="(item,index) in productDetail">
+                <td>{{item.bankOrderId}}</td>
+                <td>{{item.loanBalance}}</td>
+                <td>{{item.updateDate}}</td>
+                <td>{{item.orderStatus}}</td>
+                <td @click="save(index)"><span class="text" data-toggle="modal" data-target="#myModal">查看</span></td>
               </tr>
               </tbody>
             </table>
@@ -98,7 +91,102 @@
                   <h4 class="modal-title text-center" id="myModalLabel">交易记录详情</h4>
                 </div>
                 <div class="modal-body">
-                  ...
+                  <div class="head">
+                    <div class="name">字段名</div>
+                    <div class="text">字段内容</div>
+                  </div>
+                  <div class="content">
+                    <div class="detailBody">
+                      <div class="name">资产名</div>
+                      <div class="text">{{detail.assetName}}</div>
+                    </div>
+                    <div class="detailBody">
+                      <div class="name">更新时间</div>
+                      <div class="text">{{detail.updateDate}}</div>
+                    </div>
+                    <div class="detailBody">
+                      <div class="name">交易状态</div>
+                      <div class="text">{{detail.orderStatus}}</div>
+                    </div>
+                    <div class="detailBody">
+                      <div class="name">银行订单号</div>
+                      <div class="text">{{detail.bankOrderId}}</div>
+                    </div>
+                    <div class="detailBody">
+                      <div class="name">姓名</div>
+                      <div class="text">{{detail.name}}</div>
+                    </div><div class="detailBody">
+                      <div class="name">手机号码</div>
+                      <div class="text">{{detail.phone}}</div>
+                    </div>
+                    <div class="detailBody">
+                      <div class="name">银行卡号</div>
+                      <div class="text">{{detail.bankCardNo}}</div>
+                    </div>
+                    <div class="detailBody">
+                      <div class="name">身份证号码</div>
+                      <div class="text">{{detail.idCard}}</div>
+                    </div>
+                    <div class="detailBody">
+                      <div class="name">银行流水号</div>
+                      <div class="text">{{detail.bankFlowId}}</div>
+                    </div>
+                    <div class="detailBody">
+                      <div class="name">是否老用户</div>
+                      <div class="text">{{detail.oldCustomer}}</div>
+                    </div>
+                    <div class="detailBody">
+                      <div class="name">累计借款次数</div>
+                      <div class="text">{{detail.bankOrderId}}</div>
+                    </div>
+                    <div class="detailBody">
+                      <div class="name">是否命中风险策略</div>
+                      <div class="text">{{detail.hitRiskRule}}</div>
+                    </div>
+                    <div class="detailBody">
+                      <div class="name">借款金额</div>
+                      <div class="text">{{detail.loanBalance}}</div>
+                    </div>
+                    <div class="detailBody">
+                      <div class="name">还款金额</div>
+                      <div class="text">{{detail.repayBalance}}</div>
+                    </div><div class="detailBody">
+                    <div class="name">借款服务费</div>
+                    <div class="text">{{detail.serviceFee}}</div>
+                  </div>
+                    <div class="detailBody">
+                      <div class="name">借款期限</div>
+                      <div class="text">{{detail.loanPeriod}}</div>
+                    </div>
+                    <div class="detailBody">
+                      <div class="name">放款时间</div>
+                      <div class="text">{{detail.borrowDate}}</div>
+                    </div>
+                    <div class="detailBody">
+                      <div class="name">还款时间</div>
+                      <div class="text">{{detail.repayDate}}</div>
+                    </div>
+                    <div class="detailBody">
+                      <div class="name">当前还款状态</div>
+                      <div class="text">{{detail.repayState}}</div>
+                    </div>
+                    <div class="detailBody">
+                      <div class="name">逾期天数</div>
+                      <div class="text">{{detail.overdue}}</div>
+                    </div>
+                    <div class="detailBody">
+                      <div class="name">逾期罚息</div>
+                      <div class="text">{{detail.penalizeInt}}</div>
+                    </div>
+                    <div class="detailBody">
+                      <div class="name">累计逾期次数</div>
+                      <div class="text">{{detail.overdueCount}}</div>
+                    </div>
+                    <div class="detailBody">
+                      <div class="name">芝麻评分</div>
+                      <div class="text">{{detail.zhimaScore}}</div>
+                    </div>
+                  </div>
                 </div>
                 <div class="modal-footer" style="text-align:center">
                   <button type="button" class="btn btn-default" data-dismiss="modal">返回</button>
@@ -134,7 +222,11 @@
         modeStatus:false,
         apiAdress:false,
         picked: '',
-        dashArray: Math.PI * 100
+        dashArray: Math.PI * 100,
+        product:{},
+        token:'',
+        productDetail:[],
+        detail:{}
       }
     },
     computed: {
@@ -142,21 +234,81 @@
         return (1 - 0.58) * this.dashArray
       }
     },
+    mounted(){
+      this.product=JSON.parse(sessionStorage.product);
+      console.log(this.product);
+      this.getToken();
+    },
     methods: {
       showMode(){
         this.basicStatus=false;
         this.modeStatus=true;
+      },
+      save(index){
+        this.detail=this.productDetail[index];
+        console.log(this.detail)
+      },
+      getToken(){
+        var that = this;
+        axios({
+          method:'post',
+          url:'http://192.168.1.158:8060/uaa/oauth/token',
+          headers: {
+            'Accept': "application/json",
+            'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
+          },
+          data: {
+            password: 'password',
+            username: 'anil',
+            grant_type: 'password',
+            scope: 'read write'
+          },
+          transformRequest: [function (data) {
+            let ret = ''
+            for (let it in data) {
+              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+            }
+            return ret
+          }],
+        })
+          .then(function(response) {
+            that.token = response.data.access_token;
+            that.getAssetDetail();
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      },
+      getAssetDetail(){
+        var that=this;
+        axios({
+          method:'get',
+          url:"http://192.168.1.158:8060/cauds-exchange/loanOrder/assetId?assetId="+that.product.assetId,
+          headers: {
+            Authorization: 'Bearer ' + that.token,
+            Accept:'application/json'
+          },
+          data: {
+          },
+        })
+          .then(function(response) {
+              that.productDetail=response.data;
+            console.log(response)
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
       }
     }
   }
 </script>
 <style scoped lang="stylus" rel="stylesheet/stylus">
   #myScrollspy{
-    height:100vh;
+    height:150vh;
   }
   .row{
     background:#f2f2f2;
-    height:100vh;
+    height:150vh;
   }
   #body .title-box{
     height:50px;
@@ -169,7 +321,7 @@
   }
   #body .procedure{
     width:98%;
-    height:87vh;
+    height:130vh;
     background:#ffffff;
     border-radius:10px;
   }
@@ -190,9 +342,11 @@
   #body .procedure .top .left img{
     width:126px;
     height:126px;
-    margin-right:22px;
+    border-radius 30px
   }
   #body .procedure .top .left .content{
+    margin-left 26px
+    width 180px
   }
   #body .procedure .top .left .content .title{
     margin-bottom:17px;
@@ -205,7 +359,7 @@
     margin-bottom:17px;
   }
   #body .procedure .top .left .content .product-id{
-    font-size:16px;
+    font-size:12px;
     color:#1FB5AD;
   }
   #body .procedure .top .middle{
@@ -217,7 +371,7 @@
   }
   #body .procedure .top .middle .amount{
     width:120px;
-    height:60px;
+    height:80px;
     text-align:center;
     margin-right:30px;
   }
@@ -231,7 +385,7 @@
   }
   #body .procedure .top .middle .pay{
     width:120px;
-    height:60px;
+    height:80px;
     text-align:center;
     margin-right:30px;
   }
@@ -245,7 +399,7 @@
   }
   #body .procedure .top .middle .time{
     width:120px;
-    height:60px;
+    height:80px;
     text-align:center;
     color:#F86B4F;
     font-size:34px;
@@ -312,6 +466,52 @@
     color:#F86B4F;
     line-height:2em;
     cursor:pointer;
-
+  }
+  .modal-body .head{
+    display flex
+    height 65px
+    background #1fb5ad
+    border-radius 4px
+    align-items center
+    font-size 16px
+    color #ffffff
+    text-align center
+  }
+  .modal-body .head .name{
+    flex 1
+  }
+  .modal-body .head .text{
+    flex 3
+  }
+  .modal-body .content{
+    height 400px
+    overflow-y auto
+    overflow-x hidden
+  }
+  .modal-body .detailBody{
+    display flex
+    height 65px
+    border-radius 4px
+    align-items center
+    font-size 12px
+    text-align center
+  }
+  .modal-body .detailBody .name{
+    color #666666;
+    flex 1
+    border 1px solid #E1E1E1;
+    border-top none
+    height 65px
+    box-sizing border-box
+    line-height 65px
+  }
+  .modal-body .detailBody .text{
+    color #333333
+    flex 3
+    border-bottom 1px solid #E1E1E1
+    border-right 1px solid #E1E1E1
+    height 65px
+    box-sizing border-box
+    line-height 65px
   }
 </style>
