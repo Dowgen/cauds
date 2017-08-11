@@ -45,13 +45,17 @@
         axios({
           method:'post',
           url:'http://192.168.1.158:8060/uaa/oauth/token',
+          auth: {
+            username: 'client',
+            password: 'secret'
+          },
           headers: {
             'Accept': "application/json",
             'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
           },
           data: {
-            password: '111122',
-            username: 'test',
+            password: 'password',
+            username: 'anil',
             grant_type: 'password',
             scope: 'read write'
           },

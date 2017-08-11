@@ -23,17 +23,11 @@
         <div class="title">基本信息</div>
         <div class="top">
           <div class="subtitle">个人信息</div>
-<!--           <div class="avatar" @click="">
-  <div class="name">头像</div>
-  <div class="img-wrapper">
-    <img src="/img/assets/product-logo.png">
-    <div class="text">更改头像</div>
-  </div>
-</div> --><div class="avatar">
+          <div class="avatar">
             <div class="name">头像</div>
             <div class="img-wrapper">
               <img src="/img/assets/product-logo.png"/>
-              <input id="upfile" type="file" name="upfile" multiple="multiple" accept="image/png,image/jpg" class="accept" @change='uploadImg'>
+              <input id="upfile" type="file" name="upfile" accept="image/png,image/jpg" class="accept" @change='uploadImg'>
               <div class="text">更改头像</div>
             </div>
           </div>
@@ -189,8 +183,47 @@
           console.log(error);
         });
       },
-      changeAvatar(){
-
+      uploadImg() {
+        var that = this;
+        var data = JSON.parse(localStorage.data).data;
+        console.log($("#upfile").get(0).files[0])
+        var fd = new FormData();
+        fd.append("upload", 1);
+        fd.append('upfile', $("#upfile").get(0).files[0]);
+        fd.append('sessionid', data.sessionId);
+        $.ajax({
+          url: "http://192.168.1.158:8060/cauds-account/user/account/iconImage/" + data.userInfo.account,
+          type: "POST",
+          headers: {
+            sessionId: data.sessionId,
+            authKey: data.authKey,
+            token: that.token
+          },
+          processData: false,
+          contentType: false,
+          data: fd,
+          success: function(rs) {
+            alert('success')
+          }
+        });
+        /*axios({
+          method: 'post',
+          url: "http://192.168.1.158:8060/cauds-account/user/account/iconImage/" + data.userInfo.account,
+          headers: {
+            sessionId: data.sessionId,
+            authKey: data.authKey,
+            token: that.token,
+            'content-Type': false,
+            processData: false
+          },
+          data:fd
+        })
+        .then( rs => {
+          alert(rs);
+        })
+        .catch( err => {
+          alert(err);
+        });*/
       },
       modifyCode(){
         this.codeStatus = true;
@@ -215,28 +248,6 @@
         this.realCompanyName = this.companyName;
         this.modifyNameStatus = false;
         var that = this;
-//        var json = {
-//          "account":that.information.account,
-//          "org_name":that.realCompanyName
-//        }
-//        $.ajax({
-//          headers: {
-//            sessionId:JSON.parse(localStorage.data).sessionId,
-//            authKey:JSON.parse(localStorage.data).authKey
-//          },
-//          type: "post",
-//          url: "http://192.168.1.158:8060/cauds-account/user/account/updateInfo",
-//          contentType:"application/json",
-//          dataType:'json',
-//          data: JSON.stringify(json),
-//          success: function (data) {
-//            console.log(data);
-//            localStorage.name=that.realCompanyName;
-//          },
-//          error: function (data) {
-//            console.log(data);
-//          }
-//        });
       },
       getToken(){
         var that = this;
@@ -261,13 +272,13 @@
             return ret
           }],
         })
-          .then(function (response) {
-            that.token = response.data.access_token;
-            that.getInformation();
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
+        .then(function (response) {
+          that.token = response.data.access_token;
+          that.getInformation();
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
       },
       cancelName() {
         this.modifyNameStatus = false;
@@ -279,17 +290,18 @@
           url: "http://192.168.1.158:8060/cauds-account/user/account/accountInfo/" + JSON.parse(localStorage.data).data.userInfo.account,
           headers: {
             sessionId: JSON.parse(localStorage.data).data.sessionId,
-            authKey: JSON.parse(localStorage.data).data.authKey
+            authKey: JSON.parse(localStorage.data).data.authKey,
+            token: that.token
           }
         })
-          .then(function(response) {
-            console.log(response);
-            that.information=response.data.data;
-            that.realCompanyName=that.information.org_name;
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
+        .then(function(response) {
+          console.log(response);
+          that.information=response.data.data;
+          that.realCompanyName=that.information.org_name;
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
       }
     }
   }
