@@ -61,6 +61,10 @@
         axios({
           method:'post',
           url:'http://192.168.1.158:8060/uaa/oauth/token',
+          auth: {
+            username: 'client',
+            password: 'secret'
+          },
           headers: {
             'Accept': "application/json",
             'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
@@ -79,12 +83,13 @@
             return ret
           }],
         })
-          .then(function(response) {
-            that.token = response.data.access_token;
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
+        .then(function(response) {
+          that.token = response.data.access_token;
+          console.log(that.token);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
       },
       showMode(){
         this.basicStatus = false;
@@ -95,22 +100,22 @@
         if (that.account == '' || that.code == '') {
           alert('请输入账号密码');
         } else {
-        axios({
-          method:'get',
-          url:"http://192.168.1.158:8060/cauds-account/user/account/login/" + that.account + '/' + that.code,
-          headers: {
-            Authorization: 'Bearer ' + that.token
-          },
-          data: {
-          },
-          transformRequest: [function (data) {
-            let ret = ''
-            for (let it in data) {
-              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
-            }
-            return ret
-          }],
-        })
+          axios({
+            method:'get',
+            url:"http://192.168.1.158:8060/cauds-account/user/account/login/" + that.account + '/' + that.code,
+            headers: {
+              Authorization: 'Bearer ' + that.token
+            },
+            data: {
+            },
+            transformRequest: [function (data) {
+              let ret = ''
+              for (let it in data) {
+                ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+              }
+              return ret
+            }],
+          })
           .then(function(response) {
               console.log(response)
             if (response.data.code == 200) {

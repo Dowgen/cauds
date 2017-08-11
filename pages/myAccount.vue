@@ -26,7 +26,8 @@
           <div class="avatar">
             <div class="name">头像</div>
             <div class="img-wrapper">
-              <img src="/img/assets/product-logo.png">
+              <img src="/img/assets/product-logo.png"/>
+              <input id="upfile" type="file" name="upfile" accept="image/png,image/jpg" class="accept" @change='uploadImg'>
               <div class="text">更改头像</div>
             </div>
           </div>
@@ -172,10 +173,86 @@
         modifyPhoneStatus:false
       }
     },
+    created(){
+      this.getToken();
+    },
     mount: function () {
       this.router = location.href.substring(location.href.length - 1);
     },
     methods: {
+      getToken(){
+        var that = this;
+        axios({
+          method:'post',
+          url:'http://192.168.1.158:8060/uaa/oauth/token',
+          headers: {
+            'Accept': "application/json",
+            'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
+          },
+          data: {
+            password: '111122',
+            username: 'test',
+            grant_type: 'password',
+            scope: 'read write'
+          },
+          transformRequest: [function (data) {
+            let ret = ''
+            for (let it in data) {
+              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+            }
+            return ret
+          }],
+        })
+        .then(function(response) {
+          that.token = response.data.access_token;
+          console.log(that.token);
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
+      },
+      uploadImg() {
+        var that = this;
+        var data = JSON.parse(localStorage.data).data;
+        console.log($("#upfile").get(0).files[0])
+        var fd = new FormData();
+        fd.append("upload", 1);
+        fd.append('upfile', $("#upfile").get(0).files[0]);
+        fd.append('sessionid', data.sessionId);
+        $.ajax({
+          url: "http://192.168.1.158:8060/cauds-account/user/account/iconImage/" + data.userInfo.account,
+          type: "POST",
+          headers: {
+            sessionId: data.sessionId,
+            authKey: data.authKey,
+            token: that.token
+          },
+          processData: false,
+          contentType: false,
+          data: fd,
+          success: function(rs) {
+            alert('success')
+          }
+        });
+        /*axios({
+          method: 'post',
+          url: "http://192.168.1.158:8060/cauds-account/user/account/iconImage/" + data.userInfo.account,
+          headers: {
+            sessionId: data.sessionId,
+            authKey: data.authKey,
+            token: that.token,
+            'content-Type': false,
+            processData: false
+          },
+          data:fd
+        })
+        .then( rs => {
+          alert(rs);
+        })
+        .catch( err => {
+          alert(err);
+        });*/
+      },
       modifyCode(){
         this.codeStatus = true;
       },
@@ -309,13 +386,13 @@
             return ret
           }],
         })
-          .then(function (response) {
-            that.token = response.data.access_token;
-            that.getInformation();
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
+        .then(function (response) {
+          that.token = response.data.access_token;
+          that.getInformation();
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
       },
       cancelName() {
         this.modifyNameStatus = false;
@@ -327,17 +404,18 @@
           url: "http://192.168.1.158:8060/cauds-account/user/account/accountInfo/" + JSON.parse(localStorage.data).data.userInfo.account,
           headers: {
             sessionId: JSON.parse(localStorage.data).data.sessionId,
-            authKey: JSON.parse(localStorage.data).data.authKey
+            authKey: JSON.parse(localStorage.data).data.authKey,
+            token: that.token
           }
         })
-          .then(function(response) {
-            that.information=response.data.data;
-            that.realCompanyName=that.information.org_name;
-            that.realPhone=that.information.contact_phone;
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
+        .then(function(response) {
+          that.information=response.data.data;
+          that.realCompanyName=that.information.org_name;
+          that.realPhone=that.information.contact_phone;
+        })
+        .catch(function (error) {
+          console.log(error);
+        });
       }
     }
   }
@@ -369,7 +447,16 @@
     align-items:center;
     margin-bottom:40px;
   }
+  #upfile{
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 100%;
+    opacity: 0;
+  }
   #body .top .avatar .img-wrapper{
+    position:relative;
     text-align:center;
     font-size:14px;
     color:#1fb5ad;
