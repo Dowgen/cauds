@@ -24,7 +24,10 @@ module.exports = {
   /*
   ** Global CSS
   */
-  css: ['~/assets/css/common.css'],
+  css: [
+    '~/assets/css/common.css',
+    'toastr/build/toastr.min.css'
+  ],
   /*
    ** Customize the progress-bar color
    */

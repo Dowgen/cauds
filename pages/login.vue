@@ -18,7 +18,23 @@
 </template>
 <script type="text/ecmascript">
   import axios from 'axios'
+  import toastr from 'toastr'
 
+  toastr.options = {
+    closeButton: false,
+    debug: false,
+    progressBar: false,
+    positionClass: "toast-top-full-width",
+    onclick: null,
+    showDuration: "200",
+    hideDuration: "800",
+    timeOut: "1500",
+    extendedTimeOut: "800",
+    showEasing: "swing",
+    hideEasing: "linear",
+    showMethod: "fadeIn",
+    hideMethod: "fadeOut"
+  };
   export default {
     head: {
       title: '登录',
@@ -102,10 +118,13 @@
               localStorage.data = JSON.stringify(response.data);
               console.log(JSON.parse(localStorage.data));
               location.href = '/apiDetail'
+            }else {
+              toastr.warning('账号不存在或密码有误');
             }
           })
           .catch(function (error) {
             console.log(error);
+
           });
 
         }

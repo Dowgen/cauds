@@ -38,9 +38,17 @@
             <div class="name">登录密码</div>
             <div class="modify" @click="modifyCode">修改</div>
           </div>
-          <div class="item">
+          <div class="item item1">
             <div class="name">手机</div>
-            <div class="text">{{information.contact_phone}}</div>
+            <div class="previous" v-show="!modifyPhoneStatus">
+              <div class="text">{{realPhone}}</div>
+              <div class="modify" @click="modifyPhone">修改</div>
+            </div>
+            <div class="modify-box" v-show="modifyPhoneStatus">
+              <input v-model="phone" autofocus="autofocus">
+              <div class="save-btn" @click="savePhone">保存</div>
+              <div class="cansel-btn" @click="cancelPhone">取消</div>
+            </div>
           </div>
           <div class="item">
             <div class="name">注册时间</div>
@@ -82,7 +90,7 @@
                 <div class="name">确认密码:</div>
                 <input v-model="newCodeRepeat">
               </div>
-              <div class="save-btn" @click="modifyCode">保存</div>
+              <div class="save-btn" @click="saveCode">保存</div>
             </div>
           </div>
         </div>
@@ -112,6 +120,23 @@
 <script type="text/ecmascript">
   import axios from 'axios'
   import Hd from '~components/Hd.vue'
+  import toastr from 'toastr'
+
+  toastr.options = {
+    closeButton: false,
+    debug: false,
+    progressBar: false,
+    positionClass: "toast-top-full-width",
+    onclick: null,
+    showDuration: "200",
+    hideDuration: "800",
+    timeOut: "1500",
+    extendedTimeOut: "800",
+    showEasing: "swing",
+    hideEasing: "linear",
+    showMethod: "fadeIn",
+    hideMethod: "fadeOut"
+  };
 
   export default {
     components: {
@@ -135,13 +160,16 @@
         toggleText: "查看",
         text: '********',
         modifyNameStatus: false,
-        companyName: '杭州玛瑙湾投资金融服务有限公司',
+        companyName: '',
         realCompanyName: '',
+        phone:'',
+        realPhone:'',
         token: '',
         information: {},
         oldCode: '',
         newCode: '',
-        newCodeRepeat: ''
+        newCodeRepeat: '',
+        modifyPhoneStatus:false
       }
     },
     mount: function () {
@@ -150,6 +178,38 @@
     methods: {
       modifyCode(){
         this.codeStatus = true;
+      },
+      saveCode(){
+        if (this.newCode===''&&this.newCodeRepeat===''&&this.oldCode===''){
+          toastr.warning('请输入旧密码和新密码');
+        }
+        if (this.newCode!==this.newCodeRepeat){
+          toastr.warning('两次输入的密码不一致，请重新输入!');
+        }else {
+          var that = this;
+          axios({
+            method:'post',
+            url:'http://192.168.1.158:8060/cauds-account/user/account/passwordUpdate/'
+            +JSON.parse(localStorage.data).data.userInfo.account+'/'+that.oldCode+'/'+that.newCode,
+            headers: {
+              sessionId: JSON.parse(localStorage.data).data.sessionId,
+              authKey: JSON.parse(localStorage.data).data.authKey
+            },
+            data: {
+              "account":that.information.account,
+              "org_name":that.realCompanyName
+            },
+          })
+            .then(function(response) {
+              console.log(response);
+              toastr.warning('修改密码成功');
+              window.setTimeout("location.href='/login'",2000)
+
+            })
+            .catch(function (error) {
+              console.log(error);
+            });
+        }
       },
       back() {
         this.codeStatus = false;
@@ -163,36 +223,68 @@
           this.toggleText = "查看"
         }
       },
+
       modifyName() {
         this.companyName = this.realCompanyName;
         this.modifyNameStatus = true;
+      },
+      savePhone() {
+        if (!this.Phone || !this.Phone.match(
+            /^(0|86|17951)?(13[0-9]|15[012356789]|17[6780]|18[0-9]|14[57])[0-9]{8}$/)) {
+        toastr.warning('请输入合法的手机号');
+        return false;
+      }
+        this.realPhone=this.phone;
+        this.modifyPhoneStatus = false;
+        var that = this;
+        axios({
+          method:'post',
+          url:'http://192.168.1.158:8060/cauds-account/user/account/updateInfo',
+          headers: {
+            sessionId: JSON.parse(localStorage.data).data.sessionId,
+            authKey: JSON.parse(localStorage.data).data.authKey
+          },
+          data: {
+            "account":that.information.account,
+            "contact_phone":that.realPhone
+          },
+        })
+          .then(function(response) {
+            console.log(response);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+      },
+      cancelPhone() {
+        this.modifyPhoneStatus = false;
+      },
+      modifyPhone(){
+        this.phone = this.realPhone;
+        this.modifyPhoneStatus = true;
       },
       saveName() {
         this.realCompanyName = this.companyName;
         this.modifyNameStatus = false;
         var that = this;
-//        var json = {
-//          "account":that.information.account,
-//          "org_name":that.realCompanyName
-//        }
-//        $.ajax({
-//          headers: {
-//            sessionId:JSON.parse(localStorage.data).sessionId,
-//            authKey:JSON.parse(localStorage.data).authKey
-//          },
-//          type: "post",
-//          url: "http://192.168.1.158:8060/cauds-account/user/account/updateInfo",
-//          contentType:"application/json",
-//          dataType:'json',
-//          data: JSON.stringify(json),
-//          success: function (data) {
-//            console.log(data);
-//            localStorage.name=that.realCompanyName;
-//          },
-//          error: function (data) {
-//            console.log(data);
-//          }
-//        });
+        axios({
+          method:'post',
+          url:'http://192.168.1.158:8060/cauds-account/user/account/updateInfo',
+          headers: {
+            sessionId: JSON.parse(localStorage.data).data.sessionId,
+            authKey: JSON.parse(localStorage.data).data.authKey
+          },
+          data: {
+            "account":that.information.account,
+            "org_name":that.realCompanyName
+          },
+        })
+          .then(function(response) {
+            console.log(response);
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
       },
       getToken(){
         var that = this;
@@ -239,9 +331,9 @@
           }
         })
           .then(function(response) {
-            console.log(response);
             that.information=response.data.data;
             that.realCompanyName=that.information.org_name;
+            that.realPhone=that.information.contact_phone;
           })
           .catch(function (error) {
             console.log(error);
@@ -289,6 +381,55 @@
     display:flex;
     align-items:center;
     margin-bottom:40px;
+  }
+  #body .top .item1{
+    height 36px
+  }
+  #body .top .item .previous{
+    display:flex;
+    align-items:center;
+  }
+  #body .top .item .previous .modify{
+    margin-left 34px
+  }
+  #body .top .item .modify-box{
+    display:flex;
+    align-items:center;
+  }
+  #body .top .item .modify-box .save-btn{
+    margin-left:27px;
+    width:60px;
+    height:36px;
+    font-size:16px;
+    color:#ffffff;
+    background:#1FB5AD;
+    border-radius:6px;
+    margin-right:14px;
+    text-align:center;
+    line-height:36px;
+    cursor:pointer;
+  }
+  #body .top .item .modify-box input{
+    width:290px;
+    height:36px;
+    border-radius:6px;
+    border:1px solid #c5dddb;
+    outline:none;
+  }
+  #body .top .item .modify-box input:focus{
+    border-radius:6px;
+    border:1px solid #1fb5ad;
+  }
+  #body .top .item .modify-box .cansel-btn{
+    width:60px;
+    height:36px;
+    font-size:16px;
+    color:#555555;
+    border-radius:6px;
+    border:1px solid #b3b3b3;
+    text-align:center;
+    line-height:36px;
+    cursor:pointer;
   }
   #body .top .avatar .name,#body .top .item .name{
     width:60px;
