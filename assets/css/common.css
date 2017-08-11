@@ -2,6 +2,9 @@
 [v-cloak] {
   display: none;
 }
+img[src=""]{  
+    opacity: 0;  
+}  
 html{
 	height: 100%;
 }

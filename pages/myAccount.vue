@@ -26,7 +26,7 @@
           <div class="avatar">
             <div class="name">头像</div>
             <div class="img-wrapper">
-              <img src="/img/assets/product-logo.png"/>
+              <img :src="avatar" v-cloak/>
               <input id="upfile" type="file" name="upfile" accept="image/png,image/jpg" class="accept" @change='uploadImg'>
               <div class="text">更改头像</div>
             </div>
@@ -170,7 +170,8 @@
         oldCode: '',
         newCode: '',
         newCodeRepeat: '',
-        modifyPhoneStatus:false
+        modifyPhoneStatus:false,
+        avatar: ''
       }
     },
     created(){
@@ -190,8 +191,8 @@
             'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
           },
           data: {
-            password: '111122',
-            username: 'test',
+            password: 'password',
+            username: 'anil',
             grant_type: 'password',
             scope: 'read write'
           },
@@ -205,6 +206,7 @@
         })
         .then(function(response) {
           that.token = response.data.access_token;
+          that.getInformation();
           console.log(that.token);
         })
         .catch(function (error) {
@@ -214,11 +216,9 @@
       uploadImg() {
         var that = this;
         var data = JSON.parse(localStorage.data).data;
-        console.log($("#upfile").get(0).files[0])
         var fd = new FormData();
         fd.append("upload", 1);
         fd.append('upfile', $("#upfile").get(0).files[0]);
-        fd.append('sessionid', data.sessionId);
         $.ajax({
           url: "http://192.168.1.158:8060/cauds-account/user/account/iconImage/" + data.userInfo.account,
           type: "POST",
@@ -231,27 +231,9 @@
           contentType: false,
           data: fd,
           success: function(rs) {
-            alert('success')
+            that.avatar = 'http://192.168.1.158:8060/cauds-account/user/account/getIconImage/wb';
           }
         });
-        /*axios({
-          method: 'post',
-          url: "http://192.168.1.158:8060/cauds-account/user/account/iconImage/" + data.userInfo.account,
-          headers: {
-            sessionId: data.sessionId,
-            authKey: data.authKey,
-            token: that.token,
-            'content-Type': false,
-            processData: false
-          },
-          data:fd
-        })
-        .then( rs => {
-          alert(rs);
-        })
-        .catch( err => {
-          alert(err);
-        });*/
       },
       modifyCode(){
         this.codeStatus = true;
@@ -300,7 +282,6 @@
           this.toggleText = "查看"
         }
       },
-
       modifyName() {
         this.companyName = this.realCompanyName;
         this.modifyNameStatus = true;
@@ -363,37 +344,6 @@
             console.log(error);
           });
       },
-      getToken(){
-        var that = this;
-        axios({
-          method: 'post',
-          url: 'http://192.168.1.158:8060/uaa/oauth/token',
-          headers: {
-            'Accept': "application/json",
-            'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
-          },
-          data: {
-            password: '111122',
-            username: 'test',
-            grant_type: 'password',
-            scope: 'read write'
-          },
-          transformRequest: [function (data) {
-            let ret = ''
-            for (let it in data) {
-              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
-            }
-            return ret
-          }],
-        })
-        .then(function (response) {
-          that.token = response.data.access_token;
-          that.getInformation();
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
-      },
       cancelName() {
         this.modifyNameStatus = false;
       },
@@ -412,6 +362,12 @@
           that.information=response.data.data;
           that.realCompanyName=that.information.org_name;
           that.realPhone=that.information.contact_phone;
+          if(that.information.photo == ''){
+            //photo为空，使用默认头像
+            that.avatar = '/img/assets/product-logo.png';
+          }else{
+            that.avatar = 'http://192.168.1.158:8060/cauds-account/user/account/getIconImage/'+ that.information.account;
+          }
         })
         .catch(function (error) {
           console.log(error);
@@ -460,6 +416,10 @@
     text-align:center;
     font-size:14px;
     color:#1fb5ad;
+  }
+  #body .top .avatar .img-wrapper img{
+    width: 74px;
+    height: 74px;
   }
   #body .top .avatar .img-wrapper .text{
     margin-top:12px;

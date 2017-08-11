@@ -3,7 +3,7 @@
 
     <button class="btn btn-default dropdown-toggle" type="button" id="dropdownMenu1"
      data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-     <span>{{name}}</span>
+     <span>{{org_name}}</span>
         <span class="caret"></span>
     </button>
     <ul class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdownMenu1">
@@ -12,7 +12,6 @@
             <img src="/img/assets/Home_normal.png">基本信息</a>
         </li>
         <li>
-
             <a href="/myAccount?navChose=1" >
             <img src="img/assets/User-Profile_normal.png">认证接口</a>
         </li>
@@ -25,17 +24,80 @@
 </div>
 </template>
 <script>
+import axios from 'axios'
 export default {
-    data () {
-        return {
-          name:''
-        }
+  data () {
+    return {
+      name:'',
+      token:'',
+      org_name:''
+    }
+  },
+  created (){
+    //只为获取公司名称
+    /*if(process.browser){
+      var org_name = sessionStorage.org_name;
+      if(org_name == undefined 
+          || org_name == 'undefined'){
+          this.org_name = org_name;
+      }else{*/
+          this.getToken();
+      /*}
+    }*/
+  },
+  methods:{
+      getToken(){
+      var that = this;
+      axios({
+        method:'post',
+        url:'http://192.168.1.158:8060/uaa/oauth/token',
+        headers: {
+          'Accept': "application/json",
+          'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
+        },
+        data: {
+          password: 'password',
+          username: 'anil',
+          grant_type: 'password',
+          scope: 'read write'
+        },
+        transformRequest: [function (data) {
+          let ret = ''
+          for (let it in data) {
+            ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+          }
+          return ret
+        }],
+      })
+      .then(function(response) {
+        that.token = response.data.access_token;
+        that.getInformation();
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
     },
-    created (){
-        if (process.browser) {
-            /*this.name=JSON.parse(localStorage.data).userInfo.org_name;*/
+    getInformation() {
+      var that = this;
+      var data = JSON.parse(localStorage.data).data
+      axios({
+        method: 'get',
+        url: "http://192.168.1.158:8060/cauds-account/user/account/accountInfo/" + data.userInfo.account,
+        headers: {
+          sessionId: data.sessionId,
+          authKey: data.authKey,
+          token: that.token
         }
-    },
+      })
+      .then(function(response) {
+        that.org_name=response.data.data.org_name;
+        sessionStorage.org_name = that.information.org_name;
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    }
+  }
 }
 </script>
 <style>
@@ -50,6 +112,9 @@ export default {
         background:#222;
         border:none;
         outline:none;
+    }
+    #dropdownMenu1>span:nth-child(1){
+        margin-right: 10px;
     }
     .dropdown-menu{
         background:#222;

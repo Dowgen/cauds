@@ -39,28 +39,31 @@
         <div class="basic-wrapper">
           <div class="basic-information" v-show="basicStatus">
             <div class="market">
-              <span class="name">标志:</span>
+              <span class="name">标志：</span>
               <div class="img-wrapper">
-                <img src="/img/assets/add_logo.png">
-                <div class="text">(图片大小26*126)</div>
-              </div>
+                <div class="up-con">
+                <img :src="avatar"/>
+                <input id="upfile" type="file" name="upfile" accept="image/png,image/jpg" class="accept" @change='preivewImg'>
+                </div>
+              <div class="text">(图片大小63*63)</div>
+            </div>
             </div>
             <div class="information-box">
               <div class="name">资产名称：</div>
-              <input/>
+              <input v-model="name" type="text"/>
               <div class="unit"></div>
             </div>
             <div class="information-box">
               <div class="name">资产总额：</div>
-              <input/>
+              <input v-model="size" type="number"/>
               <div class="unit">万元</div>
             </div>
             <div class="information-box">
               <div class="name">资产周期：</div>
-              <input/>
+              <input v-model="cycle" type="number"/>
               <div class="unit">天</div>
             </div>
-            <div class="save-btn" @click="showMode">保存</div>
+            <div class="save-btn" @click="addProperty">保存</div>
           </div>
           <div class="mode" v-show="modeStatus">
             <div class="tradeStructure">
@@ -134,7 +137,23 @@
 <script>
 import axios from 'axios'
 import Hd from '~components/Hd.vue'
+import toastr from 'toastr'
 
+toastr.options = {
+  closeButton: false,
+  debug: false,
+  progressBar: false,
+  positionClass: "toast-top-full-width",
+  onclick: null,
+  showDuration: "200",
+  hideDuration: "800",
+  timeOut: "1500",
+  extendedTimeOut: "800",
+  showEasing: "swing",
+  hideEasing: "linear",
+  showMethod: "fadeIn",
+  hideMethod: "fadeOut"
+};
 export default {
   components: {
     Hd
@@ -153,9 +172,111 @@ export default {
       modeStatus:false,
       apiAdress:false,
       picked: '',
+      token: '',
+      name: '',
+      size: '',
+      cycle: '',
+      avatar: '/img/assets/add_logo.png' //初始图片
     }
   },
+  created(){
+    this.getToken();
+  },
   methods: {
+    getToken(){
+      var that = this;
+      axios({
+        method:'post',
+        url:'http://192.168.1.158:8060/uaa/oauth/token',
+        auth: {
+          username: 'client',
+          password: 'secret'
+        },
+        headers: {
+          'Accept': "application/json",
+          'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
+        },
+        data: {
+          password: 'password',
+          username: 'anil',
+          grant_type: 'password',
+          scope: 'read write'
+        },
+        transformRequest: [function (data) {
+          let ret = ''
+          for (let it in data) {
+            ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
+          }
+          return ret
+        }],
+      })
+      .then(function(response) {
+        that.token = response.data.access_token;
+        console.log(that.token);
+      })
+      .catch(function (error) {
+        console.log(error);
+      });
+    },
+    addProperty(){
+      var that = this;
+      if(that.name =='' || that.size=='' || that.cycle=='' 
+        || $("#upfile").get(0).files.length === 0){
+        toastr.warning('图片和信息请填写完整!');
+      }else{
+        axios({
+          method:'post',
+          url:'http://192.168.1.158:8060/cauds-exchange/asset/create',
+          headers: {
+            Authorization: 'Bearer ' + that.token,
+            Accept:'application/json'
+          },
+          data: {
+            assetName: that.name,
+            assetSize: that.size,
+            assetCycle: that.cycle
+          }
+        })
+        .then( rs => {
+          that.uploadImg(rs.data.assetId);
+        })
+        .catch( err => alert(err));
+      }
+    },
+    preivewImg() {
+      /* 用fileReader实现图片预览 */
+      var that = this;
+      var file = $("#upfile").get(0).files[0];
+      var name = file.name;
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        that.avatar = e.target.result;
+      }
+      reader.readAsDataURL(file, "UTF-8");
+    },
+    uploadImg(id){
+      var that = this;
+      var data = JSON.parse(localStorage.data).data;
+      var fd = new FormData();
+      fd.append("upload", 1);
+      fd.append('file', $("#upfile").get(0).files[0]);
+      fd.append('assetName', that.name);
+      fd.append('assetId', id);
+      $.ajax({
+        url: "http://192.168.1.158:8060/cauds-exchange/assetImge/upload",
+        type: "POST",
+        headers: {
+          Authorization: 'Bearer ' + that.token,
+          Accept:'application/json'
+        },
+        processData: false,
+        contentType: false,
+        data: fd,
+        success: function(rs) {
+          toastr.success('资产创建成功!');
+        }
+      });
+    },
     showMode(){
       this.basicStatus = false;
       this.modeStatus = true;
@@ -231,12 +352,26 @@ export default {
   width:80px;
   text-align:end;
 }
+#upfile{
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 100%;
+  opacity: 0;
+}
+.up-con{
+  display: inline-block;
+  position: relative;
+}
 #body .procedure .basic-wrapper .basic-information .market .img-wrapper{
-  width:320px;
+  width:270px;
   text-align:center;
 }
 #body .procedure .basic-wrapper .basic-information .market .img-wrapper img{
   margin-bottom:15px;
+  width: 63px;
+  height: 63px;
 }
 #body .procedure .basic-wrapper .basic-information .market .img-wrapper .text{
   font-size:12px;
