@@ -66,8 +66,8 @@
             'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
           },
           data: {
-            password: '111122',
-            username: 'test',
+            password: 'password',
+            username: 'anil',
             grant_type: 'password',
             scope: 'read write'
           },
@@ -124,9 +124,7 @@
           })
           .catch(function (error) {
             console.log(error);
-
           });
-
         }
       }
     }
