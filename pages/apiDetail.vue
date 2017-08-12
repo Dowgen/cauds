@@ -48,7 +48,7 @@
                   <circle class="progress-bar" r="50" cx="50" cy="50" fill="transparent" :stroke-dasharray="dashArray"
                           :stroke-dashoffset="(1-item.assetsPaid/item.assetSize)*dashArray"/>
                 </svg>
-                <div class="percent">{{getPercent(item.assetsPaid,item.assetSize)}}%
+                <div class="percent">{{parseInt(getPercent(item.assetsPaid,item.assetSize))}}%
                   <div class="text">占总比</div>
                 </div>
               </div>

@@ -57,7 +57,7 @@
                 <circle class="progress-bar" r="50" cx="50" cy="50" fill="transparent" :stroke-dasharray="dashArray"
                         :stroke-dashoffset="(1-product.assetsPaid/product.assetSize)*dashArray"/>
               </svg>
-              <div class="percent">{{product.assetsPaid/product.assetSize*100}}%</div>
+              <div class="percent">{{parseInt(product.assetsPaid/product.assetSize*100)}}%</div>
             </div>
           </div>
           <div class="trade">
@@ -245,6 +245,7 @@
         $('#myScrollspy').height( $(document).height() - 80);
         this.product=JSON.parse(sessionStorage.product);
         console.log(this.product);
+        this.getAssetDetail();
         /*this.getToken();*/
       }
     },
@@ -263,10 +264,8 @@
           method:'get',
           url:"/cauds-exchange/loanOrder/assetId?assetId="+that.product.assetId,
           headers: {
-            Authorization: 'Bearer ' + localStorage.token,
-            Accept:'application/json',
-            token_time: localStorage.token_time,
-            token_expires_in: localStorage.token_expires_in
+            Authorization: 'Bearer ' + that.localStorage.token,
+            Accept:'application/json'
           },
           data: {
           },
