@@ -38,8 +38,8 @@
             </div>
             <div class="product-bottom">
               <div class="left">
-                <div class="text">资产规模：<span class="number">{{item.assetSize}}万</span></div>
-                <div class="text">代缴资产：<span class="number">{{item.assetsPaid}}万</span></div>
+                <div class="text">资产规模：<span class="number">{{item.assetSize/10000}}万</span></div>
+                <div class="text">放贷金额：<span class="number">{{item.assetsPaid/10000}}万</span></div>
                 <div class="text">资产周期：<span class="number">{{item.assetCycle}}天</span></div>
               </div>
               <div class="right">

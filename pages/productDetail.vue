@@ -39,11 +39,11 @@
             </div>
             <div class="middle">
               <div class="amount">
-                <div class="number">{{product.assetSize}}</div>
+                <div class="number">{{product.assetSize/10000}}</div>
                 <div class="text">资产总额（万元）</div>
               </div>
               <div class="pay">
-                <div class="number">{{product.assetsPaid}}</div>
+                <div class="number">{{product.assetsPaid/10000}}</div>
                 <div class="text">代缴金额（万元）</div>
               </div>
               <div class="time">

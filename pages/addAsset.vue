@@ -56,7 +56,7 @@
             <div class="information-box">
               <div class="name">资产总额：</div>
               <input v-model="size" type="number"/>
-              <div class="unit">万元</div>
+              <div class="unit">元</div>
             </div>
             <div class="information-box">
               <div class="name">资产周期：</div>
