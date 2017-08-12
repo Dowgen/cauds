@@ -44,7 +44,7 @@
               </div>
               <div class="pay">
                 <div class="number">{{product.assetsPaid/10000}}</div>
-                <div class="text">代缴金额（万元）</div>
+                <div class="text">放贷金额（万元）</div>
               </div>
               <div class="time">
                 <div class="number">{{product.assetCycle}}</div>
