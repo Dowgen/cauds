@@ -97,6 +97,10 @@
       if(process.browser)
         $('#myScrollspy').height( $(document).height() - 80);
     },
+    updated(){
+      if(process.browser)
+        $('#myScrollspy').height( $(document).height() - 80);
+    },
     methods: {
       jump(item){
         sessionStorage.product = JSON.stringify(item);
