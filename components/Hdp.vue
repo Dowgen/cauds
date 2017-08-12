@@ -24,13 +24,14 @@
 </div>
 </template>
 <script>
-import axios from 'axios'
+import axios from '~/plugins/axios'
 export default {
   data () {
     return {
       name:'',
       token:'',
-      org_name:''
+      org_name:'',
+      localStorage:''
     }
   },
   created (){
@@ -41,60 +42,37 @@ export default {
           || org_name == 'undefined'){
           this.org_name = org_name;
       }else{*/
-          this.getToken();
+          /*this.getToken();*/
       /*}
     }*/
+    if(process.browser) this.localStorage = localStorage;
+  },
+  mounted(){
+    this.getInformation();
   },
   methods:{
-      getToken(){
-      var that = this;
-      axios({
-        method:'post',
-        url:'http://192.168.1.158:8060/uaa/oauth/token',
-        headers: {
-          'Accept': "application/json",
-          'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
-        },
-        data: {
-          password: 'password',
-          username: 'anil',
-          grant_type: 'password',
-          scope: 'read write'
-        },
-        transformRequest: [function (data) {
-          let ret = ''
-          for (let it in data) {
-            ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
-          }
-          return ret
-        }],
-      })
-      .then(function(response) {
-        that.token = response.data.access_token;
-        that.getInformation();
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-    },
     getInformation() {
       var that = this;
-      var data = JSON.parse(localStorage.data).data
+      var data = JSON.parse(that.localStorage.data).data;
       axios({
         method: 'get',
-        url: "http://192.168.1.158:8060/cauds-account/user/account/accountInfo/" + data.userInfo.account,
+        url: "/cauds-account/user/account/accountInfo/" + data.userInfo.account,
         headers: {
           sessionId: data.sessionId,
           authKey: data.authKey,
-          token: that.token
+          token: that.localStorage.token,
+          token_time: that.localStorage.token_time,
+          token_expires_in: that.localStorage.token_expires_in
+        },
+        data:{
         }
       })
       .then(function(response) {
         that.org_name=response.data.data.org_name;
-        sessionStorage.org_name = that.information.org_name;
+        /*sessionStorage.org_name = that.information.org_name;*/
       })
       .catch(function (error) {
-        console.log(error);
+        window.location.href = '/login'
       });
     }
   }

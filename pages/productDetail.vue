@@ -30,7 +30,7 @@
         <div class="procedure">
           <div class="top">
             <div class="left">
-              <img src="/img/assets/product-logo.png">
+              <img :src="baseUrl + '/cauds-exchange/assetImge/'+ product.assetLogo">
               <div class="content">
                 <div class="title">{{product.assetName}}</div>
                 <div class="time">注册时间：{{product.createTime}}</div>
@@ -201,7 +201,7 @@
 
 </template>
 <script type="text/ecmascript">
-  import axios from 'axios'
+  import axios from '~/plugins/axios'
   import Hd from '~components/Hd.vue'
 
   export default {
@@ -226,8 +226,14 @@
         product:{},
         token:'',
         productDetail:[],
-        detail:{}
+        detail:{},
+        baseUrl: '',
+        localStorage: ''
       }
+    },
+    created(){
+      if(process.browser) this.localStorage = localStorage
+      this.baseUrl = axios.defaults.baseURL;
     },
     computed: {
       dashOffset() {
@@ -235,9 +241,12 @@
       }
     },
     mounted(){
-      this.product=JSON.parse(sessionStorage.product);
-      console.log(this.product);
-      this.getToken();
+      if(process.browser){
+        $('#myScrollspy').height( $(document).height() - 80);
+        this.product=JSON.parse(sessionStorage.product);
+        console.log(this.product);
+        /*this.getToken();*/
+      }
     },
     methods: {
       showMode(){
@@ -248,56 +257,27 @@
         this.detail=this.productDetail[index];
         console.log(this.detail)
       },
-      getToken(){
-        var that = this;
-        axios({
-          method:'post',
-          url:'http://192.168.1.158:8060/uaa/oauth/token',
-          headers: {
-            'Accept': "application/json",
-            'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
-          },
-          data: {
-            password: 'password',
-            username: 'anil',
-            grant_type: 'password',
-            scope: 'read write'
-          },
-          transformRequest: [function (data) {
-            let ret = ''
-            for (let it in data) {
-              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
-            }
-            return ret
-          }],
-        })
-          .then(function(response) {
-            that.token = response.data.access_token;
-            that.getAssetDetail();
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
-      },
       getAssetDetail(){
         var that=this;
         axios({
           method:'get',
-          url:"http://192.168.1.158:8060/cauds-exchange/loanOrder/assetId?assetId="+that.product.assetId,
+          url:"/cauds-exchange/loanOrder/assetId?assetId="+that.product.assetId,
           headers: {
-            Authorization: 'Bearer ' + that.token,
-            Accept:'application/json'
+            Authorization: 'Bearer ' + localStorage.token,
+            Accept:'application/json',
+            token_time: localStorage.token_time,
+            token_expires_in: localStorage.token_expires_in
           },
           data: {
           },
         })
-          .then(function(response) {
-              that.productDetail=response.data;
-            console.log(response)
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
+        .then(function(response) {
+            that.productDetail=response.data;
+          console.log(response)
+        })
+        .catch(function (error) {
+          window.location.href = '/login'
+        });
       }
     }
   }
@@ -318,6 +298,9 @@
   #body .title-box .title{
     font-size:20px;
     margin-left:10px;
+  }
+  .title-box>img{
+    cursor:pointer
   }
   #body .procedure{
     width:98%;

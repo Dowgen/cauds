@@ -24,13 +24,13 @@
 
       <div id="body" class="col-xs-10 col-sm-10 col-md-10 col-lg-10">
         <div class="search">
-          <input placeholder="请输入关键字" size="10" >
+          <input v-model="inputSch" placeholder="请输入关键字" size="10" @keyup.enter="getPdList">
           <img src="/img/assets/Search.png">
         </div>
         <div class="productList" >
           <div class="product" v-for="item in assetList" @click="jump(item)">
             <div class="product-top">
-              <img src="/img/assets/product-logo.png">
+              <img :src="baseUrl + '/cauds-exchange/assetImge/'+ item.assetLogo">
               <div class="top-right">
                 <div class="title">{{item.assetName}}</div>
                 <div class="product-id">ID:{{item.assetId}}</div>
@@ -63,7 +63,7 @@
   </section>
 </template>
 <script type="text/ecmascript">
-  import axios from 'axios'
+  import axios from '~/plugins/axios'
   import Hd from '~components/Hd.vue'
 
   export default {
@@ -80,13 +80,22 @@
     },
     data () {
       return {
+        inputSch: '',
         dashArray: Math.PI * 100,
         token:'',
-        assetList:[]
+        assetList:[],
+        baseUrl: '',
+        localStorage: ''
       }
     },
-    created: function () {
-      this.getToken();
+    created () {
+      if(process.browser) this.localStorage = localStorage
+      this.baseUrl = axios.defaults.baseURL;
+      this.getAllAsset();
+    },
+    mounted() {
+      if(process.browser)
+        $('#myScrollspy').height( $(document).height() - 80);
     },
     methods: {
       jump(item){
@@ -96,57 +105,47 @@
       getPercent(x,y){
         return (x/y*100).toFixed(1)
       },
-      getToken(){
-        var that = this;
-        axios({
-          method:'post',
-          url:'http://192.168.1.158:8060/uaa/oauth/token',
-          headers: {
-            'Accept': "application/json",
-            'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
-          },
-          data: {
-            password: 'password',
-            username: 'anil',
-            grant_type: 'password',
-            scope: 'read write'
-          },
-          transformRequest: [function (data) {
-            let ret = ''
-            for (let it in data) {
-              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
-            }
-            return ret
-          }],
-        })
-          .then(function(response) {
-            that.token = response.data.access_token;
-            console.log(that.token);
-            that.getAllAsset();
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
-      },
       getAllAsset(){
         var that = this;
         axios({
           method:'get',
-          url:"http://192.168.1.158:8060/cauds-exchange/asset/all",
+          url:"/cauds-exchange/asset/all",
           headers: {
-            Authorization: 'Bearer ' + that.token,
+            Authorization: 'Bearer ' + that.localStorage.token,
             Accept:'application/json'
           },
           data: {
           },
         })
-          .then(function(response) {
-            that.assetList=response.data
-            console.log(that.assetList)
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
+        .then(function(response) {
+          that.assetList=response.data
+          console.log(that.assetList)
+        })
+        .catch(function (error) {
+          window.location.href = '/login'
+        });
+      },
+      getPdList(){
+        var that = this;
+        axios({
+          method:'get',
+          url:"/cauds-exchange/asset/likeByAssetName?assetName="+that.inputSch,
+          headers: {
+            Authorization: 'Bearer ' + that.localStorage.token,
+            Accept:'application/json',
+            token_time: that.localStorage.token_time,
+            token_expires_in: that.localStorage.token_expires_in
+          },
+          data: {
+          },
+        })
+        .then(function(response) {
+          that.assetList=response.data
+          console.log(that.assetList)
+        })
+        .catch(function (error) {
+          window.location.href = '/login'
+        });
       }
     },
     computed: {
@@ -318,7 +317,6 @@
   }
   #body .productList .product{
     width:30%;
-    height:220px;
     margin-right:33px;
     margin-bottom:47px;
     border:1px solid #d3d7da;

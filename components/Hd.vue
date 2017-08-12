@@ -17,12 +17,13 @@
         <div class="collapse navbar-collapse" id="main-menu">
             <div class="menu-mainmenu-container">
                 <ul id="menu-mainmenu" class="nav navbar-nav nav-pills">
-                   <li><a href="#">总览</a></li>  
-                   <li><a href="#">资产管理</a></li>  
+                   <!-- <li><a href="#">总览</a></li>  
+                   <li><a href="#">资产管理</a></li>   -->
                    <!-- <li><a href="/homepage">资产管理</a></li>   -->
                    <li><a href="/apiDetail">资产广场</a></li>
                    <!-- <li><a href="/orderHistory">系统设置</a></li>      -->
-                   <li><a href="#">系统设置</a></li>     
+                   <!-- <li><a href="#">系统设置</a></li>      -->
+                   <li><a href="/ApiDocument">接口文档</a></li>
                 </ul>
             </div>
         </div>

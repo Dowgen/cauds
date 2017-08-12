@@ -135,7 +135,7 @@
 </template>
 
 <script>
-import axios from 'axios'
+import axios from '~/plugins/axios'
 import Hd from '~components/Hd.vue'
 import toastr from 'toastr'
 
@@ -176,48 +176,22 @@ export default {
       name: '',
       size: '',
       cycle: '',
-      avatar: '/img/assets/add_logo.png' //初始图片
+      avatar: '/img/assets/add_logo.png', //初始图片,
+      localStorage: '',
     }
   },
   created(){
-    this.getToken();
+    /*this.getToken();*/
+    if(process.browser){
+      this.localStorage = localStorage;
+      console.log(this.localStorage)
+    }
+  },
+  mounted() {
+    if(process.browser)
+      $('#myScrollspy').height( $(document).height() - 80);
   },
   methods: {
-    getToken(){
-      var that = this;
-      axios({
-        method:'post',
-        url:'http://192.168.1.158:8060/uaa/oauth/token',
-        auth: {
-          username: 'client',
-          password: 'secret'
-        },
-        headers: {
-          'Accept': "application/json",
-          'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
-        },
-        data: {
-          password: 'password',
-          username: 'anil',
-          grant_type: 'password',
-          scope: 'read write'
-        },
-        transformRequest: [function (data) {
-          let ret = ''
-          for (let it in data) {
-            ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
-          }
-          return ret
-        }],
-      })
-      .then(function(response) {
-        that.token = response.data.access_token;
-        console.log(that.token);
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
-    },
     addProperty(){
       var that = this;
       if(that.name =='' || that.size=='' || that.cycle=='' 
@@ -226,15 +200,15 @@ export default {
       }else{
         axios({
           method:'post',
-          url:'http://192.168.1.158:8060/cauds-exchange/asset/create',
+          url:'/cauds-exchange/asset/create',
           headers: {
-            Authorization: 'Bearer ' + that.token,
-            Accept:'application/json'
+            Accept:'application/json',
+            Authorization: 'Bearer ' + that.localStorage.token
           },
           data: {
             assetName: that.name,
             assetSize: that.size,
-            assetCycle: that.cycle
+            assetCycle: that.cycle,
           }
         })
         .then( rs => {
@@ -256,26 +230,26 @@ export default {
     },
     uploadImg(id){
       var that = this;
-      var data = JSON.parse(localStorage.data).data;
+      var data = JSON.parse(that.localStorage.data).data;
       var fd = new FormData();
       fd.append("upload", 1);
       fd.append('file', $("#upfile").get(0).files[0]);
       fd.append('assetName', that.name);
       fd.append('assetId', id);
-      $.ajax({
-        url: "http://192.168.1.158:8060/cauds-exchange/assetImge/upload",
-        type: "POST",
+      axios({
+        method:'post',
+        url: "/cauds-exchange/assetImge/upload",
         headers: {
-          Authorization: 'Bearer ' + that.token,
+          Authorization: 'Bearer ' + that.localStorage.token,
           Accept:'application/json'
         },
-        processData: false,
-        contentType: false,
-        data: fd,
-        success: function(rs) {
-          toastr.success('资产创建成功!');
-        }
-      });
+        data: fd
+      })
+      .then( rs => {
+        toastr.success('资产创建成功!');
+        setTimeout("window.location.href = './apiDetail'",700);
+      })
+      .catch( err => window.location.href = '/login');
     },
     showMode(){
       this.basicStatus = false;
@@ -359,6 +333,7 @@ export default {
   height: 100%;
   width: 100%;
   opacity: 0;
+  cursor: pointer;
 }
 .up-con{
   display: inline-block;

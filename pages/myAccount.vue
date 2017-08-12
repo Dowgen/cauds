@@ -27,7 +27,7 @@
             <div class="name">头像</div>
             <div class="img-wrapper">
               <img :src="avatar" v-cloak/>
-              <input id="upfile" type="file" name="upfile" accept="image/png,image/jpg" class="accept" @change='uploadImg'>
+              <input id="upfile" type="file" name="upfile" accept="image/png,image/jpg" class="accept" @change='preivewImg'>
               <div class="text">更改头像</div>
             </div>
           </div>
@@ -119,7 +119,7 @@
   </section>
 </template>
 <script type="text/ecmascript">
-  import axios from 'axios'
+  import axios from '~/plugins/axios'
   import Hd from '~components/Hd.vue'
   import toastr from 'toastr'
 
@@ -151,9 +151,6 @@
         {src: 'js/bootstrap.min.js'}
       ]
     },
-    created: function () {
-      this.getToken();
-    },
     data () {
       return {
         router: '',
@@ -171,37 +168,57 @@
         newCode: '',
         newCodeRepeat: '',
         modifyPhoneStatus:false,
-        avatar: ''
+        avatar: '',
+        localStorage:''
       }
     },
     created(){
-      this.getToken();
+      if(process.browser) this.localStorage = localStorage;
     },
-    mount: function () {
-      this.router = location.href.substring(location.href.length - 1);
+    beforeMount() {
+      this.router = parseInt(location.href.substring(location.href.length - 1));
+      this.getInformation();
+    },
+    mounted() {
+      if(process.browser){
+        $('#myScrollspy').height( $(document).height() - 80);
+      }
     },
     methods: {
+      preivewImg() {
+        /* 用fileReader实现图片预览 */
+        var that = this;
+        var file = $("#upfile").get(0).files[0];
+        var name = file.name;
+        var reader = new FileReader();
+        reader.onload = function(e) {
+          that.avatar = e.target.result;
+        }
+        reader.readAsDataURL(file, "UTF-8");
+        this.uploadImg();
+      },
       uploadImg() {
         var that = this;
-        var data = JSON.parse(localStorage.data).data;
+        var data = JSON.parse(that.localStorage.data).data;
         var fd = new FormData();
         fd.append("upload", 1);
         fd.append('upfile', $("#upfile").get(0).files[0]);
-        $.ajax({
-          url: "http://192.168.1.158:8060/cauds-account/user/account/iconImage/" + data.userInfo.account,
-          type: "POST",
+        axios({
+          method:'post',
+          url: "/cauds-account/user/account/iconImage/" + data.userInfo.account,
           headers: {
             sessionId: data.sessionId,
             authKey: data.authKey,
-            token: that.token
+            token: that.localStorage.token,
+            token_time: that.localStorage.token_time,
+            token_expires_in: that.localStorage.token_expires_in
           },
-          processData: false,
-          contentType: false,
           data: fd,
-          success: function(rs) {
-            that.avatar = 'http://192.168.1.158:8060/cauds-account/user/account/getIconImage/wb';
-          }
-        });
+        })
+        .then( rs => {
+          that.avatar = axios.defaults.baseURL+'/cauds-account/user/account/getIconImage/'+that.information.account;
+        })
+        .catch( err => window.location.href = '/login');
       },
       modifyCode(){
         this.codeStatus = true;
@@ -216,11 +233,13 @@
           var that = this;
           axios({
             method:'post',
-            url:'http://192.168.1.158:8060/cauds-account/user/account/passwordUpdate/'
-            +JSON.parse(localStorage.data).data.userInfo.account+'/'+that.oldCode+'/'+that.newCode,
+            url:'/cauds-account/user/account/passwordUpdate/'
+            +JSON.parse(that.localStorage.data).data.userInfo.account+'/'+that.oldCode+'/'+that.newCode,
             headers: {
-              sessionId: JSON.parse(localStorage.data).data.sessionId,
-              authKey: JSON.parse(localStorage.data).data.authKey
+              sessionId: JSON.parse(that.localStorage.data).data.sessionId,
+              authKey: JSON.parse(that.localStorage.data).data.authKey,
+              token_time: that.localStorage.token_time,
+              token_expires_in: that.localStorage.token_expires_in
             },
             data: {
               "account":that.information.account,
@@ -234,7 +253,7 @@
 
             })
             .catch(function (error) {
-              console.log(error);
+              window.location.href = '/login';
             });
         }
       },
@@ -265,10 +284,12 @@
         var that = this;
         axios({
           method:'post',
-          url:'http://192.168.1.158:8060/cauds-account/user/account/updateInfo',
+          url:'/cauds-account/user/account/updateInfo',
           headers: {
-            sessionId: JSON.parse(localStorage.data).data.sessionId,
-            authKey: JSON.parse(localStorage.data).data.authKey
+            sessionId: JSON.parse(that.localStorage.data).data.sessionId,
+            authKey: JSON.parse(that.localStorage.data).data.authKey,
+            token_time: that.localStorage.token_time,
+            token_expires_in: that.localStorage.token_expires_in
           },
           data: {
             "account":that.information.account,
@@ -279,7 +300,7 @@
             console.log(response);
           })
           .catch(function (error) {
-            console.log(error);
+            window.location.href = '/login';
           });
       },
       cancelPhone() {
@@ -295,52 +316,23 @@
         var that = this;
         axios({
           method:'post',
-          url:'http://192.168.1.158:8060/cauds-account/user/account/updateInfo',
+          url:'/cauds-account/user/account/updateInfo',
           headers: {
-            sessionId: JSON.parse(localStorage.data).data.sessionId,
-            authKey: JSON.parse(localStorage.data).data.authKey
+            sessionId: JSON.parse(that.localStorage.data).data.sessionId,
+            authKey: JSON.parse(that.localStorage.data).data.authKey,
+            token_time: that.localStorage.token_time,
+            token_expires_in: that.localStorage.token_expires_in
           },
           data: {
             "account":that.information.account,
             "org_name":that.realCompanyName
           },
         })
-          .then(function(response) {
-            console.log(response);
-          })
-          .catch(function (error) {
-            console.log(error);
-          });
-      },
-      getToken(){
-        var that = this;
-        axios({
-          method: 'post',
-          url: 'http://192.168.1.158:8060/uaa/oauth/token',
-          headers: {
-            'Accept': "application/json",
-            'Authorization': "Basic Y2xpZW50OnNlY3JldA=="
-          },
-          data: {
-            password: 'password',
-            username: 'anil',
-            grant_type: 'password',
-            scope: 'read write'
-          },
-          transformRequest: [function (data) {
-            let ret = ''
-            for (let it in data) {
-              ret += encodeURIComponent(it) + '=' + encodeURIComponent(data[it]) + '&'
-            }
-            return ret
-          }],
-        })
-        .then(function (response) {
-          that.token = response.data.access_token;
-          that.getInformation();
+        .then(function(response) {
+          location.reload(true);
         })
         .catch(function (error) {
-          console.log(error);
+          window.location.href = '/login';
         });
       },
       cancelName() {
@@ -350,11 +342,13 @@
         var that=this;
         axios({
           method: 'get',
-          url: "http://192.168.1.158:8060/cauds-account/user/account/accountInfo/" + JSON.parse(localStorage.data).data.userInfo.account,
+          url: "/cauds-account/user/account/accountInfo/" + JSON.parse(that.localStorage.data).data.userInfo.account,
           headers: {
-            sessionId: JSON.parse(localStorage.data).data.sessionId,
-            authKey: JSON.parse(localStorage.data).data.authKey,
-            token: that.token
+            sessionId: JSON.parse(that.localStorage.data).data.sessionId,
+            authKey: JSON.parse(that.localStorage.data).data.authKey,
+            token: that.localStorage.token,
+            token_time: that.localStorage.token_time,
+            token_expires_in: that.localStorage.token_expires_in
           }
         })
         .then(function(response) {
@@ -363,13 +357,13 @@
           that.realPhone=that.information.contact_phone;
           if(that.information.photo == ''){
             //photo为空，使用默认头像
-            that.avatar = '/img/assets/product-logo.png';
+            that.avatar = axios.defaults.baseURL+'/img/assets/product-logo.png';
           }else{
-            that.avatar = 'http://192.168.1.158:8060/cauds-account/user/account/getIconImage/'+ that.information.account;
+            that.avatar = axios.defaults.baseURL+'/cauds-account/user/account/getIconImage/'+ that.information.account;
           }
         })
         .catch(function (error) {
-          console.log(error);
+          window.location.href = '/login';
         });
       }
     }

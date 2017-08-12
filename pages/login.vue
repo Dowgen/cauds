@@ -17,7 +17,7 @@
   </div>
 </template>
 <script type="text/ecmascript">
-  import axios from 'axios'
+  import axios from '~/plugins/axios'
   import toastr from 'toastr'
 
   toastr.options = {
@@ -44,8 +44,8 @@
         {src: 'js/bootstrap.min.js'}
       ]
     },
-    created: function () {
-        this.getToken();
+    created () {
+        /*this.getToken();*/
     },
 
     data () {
@@ -56,11 +56,11 @@
       }
     },
     methods: {
-      getToken(){
+      /*getToken(){
         var that = this;
         axios({
           method:'post',
-          url:'http://192.168.1.158:8060/uaa/oauth/token',
+          url:'/uaa/oauth/token',
           auth: {
             username: 'client',
             password: 'secret'
@@ -90,7 +90,7 @@
         .catch(function (error) {
           console.log(error);
         });
-      },
+      },*/
       showMode(){
         this.basicStatus = false;
         this.modeStatus = true;
@@ -102,9 +102,9 @@
         } else {
           axios({
             method:'get',
-            url:"http://192.168.1.158:8060/cauds-account/user/account/login/" + that.account + '/' + that.code,
+            url:"/cauds-account/user/account/login/" + that.account + '/' + that.code,
             headers: {
-              Authorization: 'Bearer ' + that.token
+              
             },
             data: {
             },
@@ -121,6 +121,9 @@
             if (response.data.code == 200) {
               /* console.log(response.data.userInfo); */
               localStorage.data = JSON.stringify(response.data);
+              localStorage.token = response.data.data.access_token;
+              localStorage.token_time = response.data.data.token_time;
+              localStorage.token_expires_in = response.data.data.token_expires_in;
               console.log(JSON.parse(localStorage.data));
               location.href = '/apiDetail'
             }else {
