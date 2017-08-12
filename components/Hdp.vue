@@ -15,7 +15,7 @@
             <a href="/myAccount?navChose=1" >
             <img src="img/assets/User-Profile_normal.png">认证接口</a>
         </li>
-        <li><a href="/login">
+        <li><a href="javascript:void(0);" @click="logOut">
             <img src="/img/assets/loginout.png">登出</a>
 
         </li>
@@ -51,6 +51,13 @@ export default {
     this.getInformation();
   },
   methods:{
+    logOut (){
+      if(process.browser){
+        localStorage.removeItem('data');
+        localStorage.removeItem('token');
+        window.location.href = '/login'
+      }
+    },
     getInformation() {
       var that = this;
       var data = JSON.parse(that.localStorage.data).data;
