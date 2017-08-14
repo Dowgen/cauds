@@ -67,9 +67,7 @@ export default {
         headers: {
           sessionId: data.sessionId,
           authKey: data.authKey,
-          token: that.localStorage.token,
-          token_time: that.localStorage.token_time,
-          token_expires_in: that.localStorage.token_expires_in
+          token: that.localStorage.token
         },
         data:{
         }

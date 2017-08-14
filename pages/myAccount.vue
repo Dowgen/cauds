@@ -209,9 +209,7 @@
           headers: {
             sessionId: data.sessionId,
             authKey: data.authKey,
-            token: that.localStorage.token,
-            token_time: that.localStorage.token_time,
-            token_expires_in: that.localStorage.token_expires_in
+            token: that.localStorage.token
           },
           data: fd,
         })
@@ -237,9 +235,7 @@
             +JSON.parse(that.localStorage.data).data.userInfo.account+'/'+that.oldCode+'/'+that.newCode,
             headers: {
               sessionId: JSON.parse(that.localStorage.data).data.sessionId,
-              authKey: JSON.parse(that.localStorage.data).data.authKey,
-              token_time: that.localStorage.token_time,
-              token_expires_in: that.localStorage.token_expires_in
+              authKey: JSON.parse(that.localStorage.data).data.authKey
             },
             data: {
               "account":that.information.account,
@@ -287,9 +283,7 @@
           url:'/cauds-account/user/account/updateInfo',
           headers: {
             sessionId: JSON.parse(that.localStorage.data).data.sessionId,
-            authKey: JSON.parse(that.localStorage.data).data.authKey,
-            token_time: that.localStorage.token_time,
-            token_expires_in: that.localStorage.token_expires_in
+            authKey: JSON.parse(that.localStorage.data).data.authKey
           },
           data: {
             "account":that.information.account,
@@ -319,9 +313,7 @@
           url:'/cauds-account/user/account/updateInfo',
           headers: {
             sessionId: JSON.parse(that.localStorage.data).data.sessionId,
-            authKey: JSON.parse(that.localStorage.data).data.authKey,
-            token_time: that.localStorage.token_time,
-            token_expires_in: that.localStorage.token_expires_in
+            authKey: JSON.parse(that.localStorage.data).data.authKey
           },
           data: {
             "account":that.information.account,
@@ -346,9 +338,7 @@
           headers: {
             sessionId: JSON.parse(that.localStorage.data).data.sessionId,
             authKey: JSON.parse(that.localStorage.data).data.authKey,
-            token: that.localStorage.token,
-            token_time: that.localStorage.token_time,
-            token_expires_in: that.localStorage.token_expires_in
+            token: that.localStorage.token
           }
         })
         .then(function(response) {

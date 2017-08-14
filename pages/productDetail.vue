@@ -76,7 +76,10 @@
               <tr v-for="(item,index) in productDetail">
                 <td>{{item.bankOrderId}}</td>
                 <td>{{item.loanBalance}}</td>
-                <td>{{item.updateDate}}</td>
+                <td>
+                  {{new Date(item.updateDate).toLocaleDateString()}}
+                  {{new Date(item.updateDate).toLocaleTimeString()}}
+                </td>
                 <td>{{item.orderStatus}}</td>
                 <td @click="save(index)"><span class="text" data-toggle="modal" data-target="#myModal">查看</span></td>
               </tr>
@@ -102,7 +105,10 @@
                     </div>
                     <div class="detailBody">
                       <div class="name">更新时间</div>
-                      <div class="text">{{detail.updateDate}}</div>
+                      <div class="text">
+                      {{new Date(detail.updateDate).toLocaleDateString()}}
+                      {{new Date(detail.updateDate).toLocaleTimeString()}}
+                      </div>
                     </div>
                     <div class="detailBody">
                       <div class="name">交易状态</div>

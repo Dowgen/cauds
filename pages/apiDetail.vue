@@ -122,8 +122,7 @@
           },
         })
         .then(function(response) {
-          that.assetList=response.data
-          console.log(that.assetList)
+          that.assetList=response.data.reverse()
         })
         .catch(function (error) {
           window.location.href = '/login'
@@ -136,9 +135,7 @@
           url:"/cauds-exchange/asset/likeByAssetName?assetName="+that.inputSch,
           headers: {
             Authorization: 'Bearer ' + that.localStorage.token,
-            Accept:'application/json',
-            token_time: that.localStorage.token_time,
-            token_expires_in: that.localStorage.token_expires_in
+            Accept:'application/json'
           },
           data: {
           },

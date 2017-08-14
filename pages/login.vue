@@ -1,5 +1,5 @@
 <template>
-  <div class="row" v-cloak>
+  <div class="row" v-cloak @keyup.enter="submit">
     <div class="register-box">
       <div class="left">
         <div class="inner">
@@ -95,10 +95,10 @@
         this.basicStatus = false;
         this.modeStatus = true;
       },
-      submit: function () {
+      submit() {
         var that = this;
         if (that.account == '' || that.code == '') {
-          alert('请输入账号密码');
+          toastr.warning('请输入账号密码');
         } else {
           axios({
             method:'get',
@@ -122,9 +122,6 @@
               /* console.log(response.data.userInfo); */
               localStorage.data = JSON.stringify(response.data);
               localStorage.token = response.data.data.access_token;
-              localStorage.token_time = response.data.data.token_time;
-              localStorage.token_expires_in = response.data.data.token_expires_in;
-              console.log(JSON.parse(localStorage.data));
               location.href = '/apiDetail'
             }else {
               toastr.warning('账号不存在或密码有误');
