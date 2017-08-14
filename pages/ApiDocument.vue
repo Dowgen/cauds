@@ -13,7 +13,7 @@
                 <a href="javascript:void(0);" class="navClicked">基本信息</a>
               </li>
               <li>
-                <a href="javascript:void(0);">资产段</a>
+                <a href="javascript:void(0);">资产端</a>
               </li>
             </ul>
           </nav>
