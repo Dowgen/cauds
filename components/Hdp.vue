@@ -77,7 +77,8 @@ export default {
         /*sessionStorage.org_name = that.information.org_name;*/
       })
       .catch(function (error) {
-        window.location.href = '/login'
+        /*window.location.href = '/login'*/
+        alert(error)
       });
     }
   }

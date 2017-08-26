@@ -9,7 +9,7 @@
               <li>
                 <a href="javascript:void(0);" class="navClicked" onclick="location.href='/apiDetail'">资产面板</a>
               </li>
-              <li>
+              <li v-show="userType==1">
                 <a href="javascript:void(0);" onclick="location.href='/addAsset'">添加资产</a>
               </li>
               <li>
@@ -23,17 +23,43 @@
       </div>
 
       <div id="body" class="col-xs-10 col-sm-10 col-md-10 col-lg-10">
-        <div class="search">
-          <input v-model="inputSch" placeholder="请输入关键字" size="10" @keyup.enter="getPdList">
-          <img src="/img/assets/Search.png">
+        <div class="limit">
+          <div>
+            <h3>业务状态:</h3>
+            <div class="radio">
+              <div  v-for="(item,index) in bizList">
+                <input type="checkbox" :id="'checkbox'+index" checked="true">
+                <label :for="'checkbox'+index" @click="changeChannel('bizChoseList',index,item.id)">{{item.name}}</label>
+              </div>  
+            </div>
+          </div>
+          <div>
+            <h3>机构名称:</h3>
+            <div class="radio">
+            <div  v-for="(item,index) in orgList">
+              <input type="checkbox" :id="'checkboxB'+index" checked="true">
+              <label :for="'checkboxB'+index" @click="changeChannel('orgChoseList',index,item.orgId)">{{item.orgName}}</label>
+            </div>
+          </div>
+         </div> 
+         <div class="search">
+          <input v-model="inputSch" placeholder="请输入关键字" size="10" @keyup.enter="findAssets">
+          <img src="/img/assets/Search.png" @click="findAssets">
+         </div>
         </div>
+        
         <div class="productList" >
-          <div class="product" v-for="item in assetList" @click="jump(item)">
+          <div class="product" v-for="(item,index) in curList" 
+          @mouseover="showMask(item.assetId,item.assetStatus,index)" 
+          @mouseleave="unshowMask(item.assetStatus,index)" @click.stop="jump(item,0)">
+          <div  :style="item.assetStatus == 1&&userType==2 || item.assetStatus == 2 ||item.assetStatus == 7 || item.assetStatus == 8?{opacity:0.5}:''">
+            <div style="position:absolute;right:0">
+              <img :src="'/img/apiDetail/'+item.assetStatus + '.png'">
+            </div>
             <div class="product-top">
               <img :src="baseUrl + '/cauds-exchange/assetImge/'+ item.assetLogo">
               <div class="top-right">
                 <div class="title">{{item.assetName}}</div>
-                <div class="product-id">ID:{{item.assetId}}</div>
               </div>
             </div>
             <div class="product-bottom">
@@ -45,19 +71,42 @@
               <div class="right">
                 <svg width="80" height="80" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
                   <circle class="progress-background" r="50" cx="50" cy="50" fill="transparent"/>
-                  <circle class="progress-bar" r="50" cx="50" cy="50" fill="transparent" :stroke-dasharray="dashArray"
-                          :stroke-dashoffset="(1-item.assetsPaid/item.assetSize)*dashArray"/>
+                  <circle class="progress-bar" r="50" cx="50" cy="50" fill="transparent" 
+                  :stroke-dasharray="dashArray"
+                  :stroke-dashoffset="(1-item.assetsPaid/item.assetSize)*dashArray"/>
                 </svg>
-                <div class="percent">{{parseInt(getPercent(item.assetsPaid,item.assetSize))}}%
+                <div class="percent">
+                  {{parseInt(getPercent(item.assetsPaid,item.assetSize))}}%
                   <div class="text">占总比</div>
                 </div>
               </div>
             </div>
+            </div>
+            <div class="notNormal-text waitJudge-text" v-show="item.assetStatus == 1 && userType== '2'" @click.stop="jump(item,1)">
+              <p :id="'wait'+index">等待审核</p>
+              <img v-show="item.assetStatus != 7&& userType==2" @click.stop="lockAsset(item.assetId)" title="锁定资产" src="/img/apiDetail/white_lock.png" class="lock-icon">   
+            </div>
+            <div class="notNormal-text reject-text" v-show="item.assetStatus == 2" @click.stop="jump(item,2)">
+              <p :id="'reject'+index">审核被驳回</p>
+              <img v-show="item.assetStatus != 7&& userType==2" @click.stop="lockAsset(item.assetId)" title="锁定资产" src="/img/apiDetail/white_lock.png" class="lock-icon">   
+            </div>
+            <div class="notNormal-text expired-text" v-show="item.assetStatus == 8" @click.stop="jump(item,3)">
+              <p :id="'expired'+index">资产过期</p> 
+              <img v-show="item.assetStatus != 7&& userType==2" @click.stop="lockAsset(item.assetId)" title="锁定资产" src="/img/apiDetail/white_lock.png" class="lock-icon">   
+            </div>
+            <div class="notNormal-text lock-text" v-show="item.assetStatus == 7" @click.stop="">
+              <img src="/img/apiDetail/belocked.png">
+              <img v-show="item.assetStatus != 7&& userType==2" @click.stop="lockAsset(item.assetId)" title="锁定资产" src="/img/apiDetail/white_lock.png" class="lock-icon">   
+            </div>
+            <div class="product-mask" v-show="showPdctId == item.assetId">   
+              <img v-show="item.assetStatus != 7&& userType==2" @click.stop="lockAsset(item.assetId)" title="锁定资产" src="/img/apiDetail/white_lock.png" class="lock-icon">   
+            </div>
           </div>
-          <div class="add product" onclick="location.href='/addAsset'">
+          <div v-show="userType== '1'" class="add product" onclick="location.href='/addAsset'">
             <img src="/img/assets/add_hover.png">
           </div>
         </div>
+        <vue-nav :cur="cur" :all="all" :callback="callback"></vue-nav>
       </div>
     </div>
   </section>
@@ -65,10 +114,12 @@
 <script type="text/ecmascript">
   import axios from '~/plugins/axios'
   import Hd from '~components/Hd.vue'
+  import Vnav from '~components/vue-nav.vue'
 
   export default {
     components: {
-      Hd
+      Hd,
+      'vue-nav':Vnav
     },
     head: {
       title: '资产列表',
@@ -80,18 +131,34 @@
     },
     data () {
       return {
+        userType:'', //判断是资金方登陆还是资产方
+        bizList:[],
+        bizChoseList: [],
+        orgList:[],
+        orgChoseList:[],
         inputSch: '',
+        showPdctId: '', //鼠标经过的productId
         dashArray: Math.PI * 100,
         token:'',
         assetList:[],
         baseUrl: '',
-        localStorage: ''
+        localStorage: '',
+        /* 分页data */
+        cur: 1, //当前页数
+        all: 0, //总页数
+        perPage:8, //每页显示的产品数
+        curList: [] //当前页产品列表
       }
     },
     created () {
-      if(process.browser) this.localStorage = localStorage
+      if(process.browser){
+        this.localStorage = localStorage
+        this.userType = localStorage.userType;
+      } 
       this.baseUrl = axios.defaults.baseURL;
-      this.getAllAsset();
+    },
+    beforeMount(){
+      this.getAssetStatus();
     },
     mounted() {
       if(process.browser)
@@ -102,49 +169,159 @@
         $('#myScrollspy').height( $(document).height() - 80);
     },
     methods: {
-      jump(item){
-        sessionStorage.product = JSON.stringify(item);
-        location.href='/productDetail'
+      showMask(id,status,index){
+        this.showPdctId = id;
+        if(status == 2) {
+          $('#reject'+index).css('background','#ff5500');
+          $('#reject'+index).css('color','white');
+        }else if(status == 8) {
+          $('#expired'+index).css('background','#adadad');
+          $('#expired'+index).css('color','white');
+        }
       },
-      getPercent(x,y){
+      unshowMask(status,index){
+        this.showPdctId = '';
+        if(status == 2) {
+          $('#reject'+index).css('background','rgba(255,180,0,0.16)');
+          $('#reject'+index).css('color','rgba(255,180,0,1)');
+        }else if(status == 8) {
+          $('#expired'+index).css('background','rgba(173,173,173,0.16)');
+          $('#expired'+index).css('color','rgba(173,173,173,1)');
+        }
+      },
+      lockAsset(id){
+        var that = this;
+        var data = JSON.parse(that.localStorage.data).data;
+        var lockReason = '';
+        layer.confirm('是否锁定该资产包?', {icon: 1, title:'提示'}, function(index){
+          layer.close(index);
+          layer.prompt({title: '请输入锁定原因', formType: 2}, function(text, index){
+            axios({
+              method:'get',
+              url:"/cauds-exchange/asset/lock?assetId=" + id + '&reason='+ text
+              +'&account='+ data.userInfo.account,
+              headers: {
+                Authorization: 'Bearer ' + that.localStorage.token,
+                Accept:'application/json'
+              }
+            })
+            .then( rs=>  {
+              layer.msg('锁定成功',{time:2000});
+              location.reload();
+            })
+            .catch( /*err => window.location.href = '/login'*/)
+          });
+          layer.close(index);
+        });     
+      },
+      callback(data) {  //分页回调
+        var start = (data-1) * this.perPage;
+        var end = start + this.perPage;
+        this.cur = data;
+        this.curList = this.assetList.slice(start, end);
+      },
+      jump(item,num){  //跳转至产品页
+        sessionStorage.product = JSON.stringify(item);
+        if(num===0){ //正常
+          location.href='/productDetail'
+        }else if(num===1){ //待确认
+          location.href='/waitJudge'
+        }else if(num===2){ //被驳回
+          location.href='/notNormalDetail?type=reject'
+        }else if(num===3){ //过期
+          location.href='/notNormalDetail?type=expired'
+        }
+      },
+      getPercent(x,y){ //百分比计算
         return (x/y*100).toFixed(1)
       },
-      getAllAsset(){
-        var that = this;
-        axios({
-          method:'get',
-          url:"/cauds-exchange/asset/all",
-          headers: {
-            Authorization: 'Bearer ' + that.localStorage.token,
-            Accept:'application/json'
-          },
-          data: {
-          },
-        })
-        .then(function(response) {
-          that.assetList=response.data.reverse()
-        })
-        .catch(function (error) {
-          window.location.href = '/login'
-        });
+      //勾选/取消 渠道复选框，更改数组数据,并调用产品列表方法
+      changeChannel (list, index, id){
+        var channel = this[list];
+        console.log('channel:'+channel)
+        //判断是点击的哪个元素
+        if( list === 'bizChoseList'){
+          var jqueryId = '#checkbox' + index
+        }else{
+          var jqueryId = '#checkboxB' + index
+        }
+        //判断本次点击是选中还是取消(****PS:不知道为什么选中时值为false，先这样写着吧)
+        if($(jqueryId).is(":checked") == false){  //选中，添加id
+          channel.push(id);
+        }else{  //取消选中，删除id
+          for(var i=0; i<channel.length; ++i) {
+            if(channel[i] == id) {
+              channel.splice(i, 1);
+                break;
+            }
+          }
+        }
+        this[list] = channel;
+        console.log(this[list])
+        this.findAssets();
       },
-      getPdList(){
+      getAssetStatus(){  //获得业务状态label列表
         var that = this;
+        var data = JSON.parse(that.localStorage.data).data;
         axios({
           method:'get',
-          url:"/cauds-exchange/asset/likeByAssetName?assetName="+that.inputSch,
+          url:"/cauds-exchange/asset/assetStatusList",
           headers: {
             Authorization: 'Bearer ' + that.localStorage.token,
             Accept:'application/json'
           },
           data: {
-          },
+          }
         })
-        .then(function(response) {
-          that.assetList=response.data
-          console.log(that.assetList)
+        .then( rs=>  {
+          that.bizList = rs.data.data;
+          for(let i in that.bizList) 
+            that.bizChoseList.push(that.bizList[i].id)
+          that.getOrg();
+      })
+        .catch( /*err => window.location.href = '/login'*/)
+      },
+      getOrg(){  //获得机构label列表
+        var that = this;
+        var data = JSON.parse(that.localStorage.data).data;
+        axios({
+          method:'get',
+          url:"/cauds-account/user/org/list?orgId=" + data.orgInfo.orgId +
+            '&orgType=' + data.orgInfo.type,
+          headers: {
+            sessionId: data.sessionId,
+            authKey: data.authKey
+          }
         })
-        .catch(function (error) {
+        .then( rs=>  {
+          that.orgList = rs.data.data;
+          for(let i in that.orgList) 
+            that.orgChoseList.push(that.orgList[i].orgId)
+          that.findAssets();
+      })
+        .catch( /*err => window.location.href = '/login'*/)
+      },
+      findAssets(){ //筛选+搜索产品
+        var that = this;
+        var data = JSON.parse(that.localStorage.data).data;
+        axios({
+          method:'get',
+          url:"/cauds-exchange/asset/findAssets?orgId=" + data.orgInfo.orgId
+            + '&orgType='+ data.orgInfo.type 
+            + '&queOrgId=' + that.orgChoseList.join(',').toString()
+            + '&assetStatus=' + that.bizChoseList.join(',').toString()
+            + '&keyword=' + that.inputSch,
+          headers: {
+            Authorization: 'Bearer ' + that.localStorage.token,
+            Accept:'application/json'
+          }
+        })
+        .then( res => {
+          that.assetList=res.data;
+          that.all = Math.ceil(that.assetList.length / that.perPage);
+          that.callback(1);
+        })
+        .catch( err =>{
           window.location.href = '/login'
         });
       }
@@ -288,6 +465,81 @@
   #myScrollspy a{
     color:#95a0aa;
   }
+  .limit{
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    flex-direction: column;
+    justify-content:center;
+    align-items: flex-start;
+    width: 90%;
+    margin-top: 20px;
+  }
+  .limit>div>h3{
+    font-size:16px;
+    font-family: "SimHei";
+  }
+  .radio{
+    display: -webkit-box;
+      display: -ms-flexbox;
+      display: flex;
+      -webkit-box-pack: justify;
+      -ms-flex-pack: justify;
+              justify-content: space-between;
+      -webkit-box-align: center;
+      -ms-flex-align: center;
+              align-items: center;
+      position: relative;
+      margin: 0 auto;
+      top: 30%;
+      height: 40%;
+      background-color: white;
+  }
+  .radio>span{
+    margin-right: 5px;
+  }
+  .radio>div{
+    margin-right:15px;
+  }
+  input[type="checkbox"]{
+      display: none;
+  }
+  input[type="checkbox"]+label {
+      display: inline-block;
+      margin:0;
+      padding:0;
+      -webkit-box-sizing: border-box;
+  }
+  label::before {
+      content: "";
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      background: #EEE;
+      vertical-align: middle;
+      -webkit-border-radius: 50%;
+      margin-right: 5px;
+      -webkit-box-sizing:border-box;
+      -webkit-transition:background ease-in .5s
+  }
+
+  input[type="checkbox"]:checked+label::before{
+      background-color: #1FB5AD;
+      border: 5px #EEEEEE solid;
+  }
+  .limit button{
+    margin:10px 0;
+    background: #1fb5ad;
+      text-align: center;
+      line-height: 32px;
+      height: 32px;
+      color: #fff;
+      font-size: 12px;
+      border: none;
+      width: 55px;
+      border-radius: 6px;
+      outline:none;
+  }
   .search{
     display: -webkit-box;
     display: -ms-flexbox;
@@ -301,7 +553,6 @@
     width: 160px;
     height: 32px;
     position:absolute;
-    top:28px;
     right:6%;
   }
   .search input{
@@ -311,12 +562,16 @@
     outline:none;
     width: 85px;
   }
+  .search img{
+    cursor:pointer;
+  }
   #body .productList{
     display:flex;
     flex-wrap:wrap;
-    margin-top:98px;
+    margin-top:48px;
   }
   #body .productList .product{
+    position:relative;
     width:30%;
     margin-right:33px;
     margin-bottom:47px;
@@ -329,67 +584,112 @@
     border:1px solid #1fb5ad;
     cursor: pointer;
   }
-  #body .productList .product .product-top{
+  .notNormal-text{
+    position:absolute;
+    top:0;left:0;right:0;bottom:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    width:100%;
+    height:100%;
+    z-index:999;
+    font-size:21px;
+    text-align:center;
+  }
+  .notNormal-text>p{
+    position:relative;
+    border-radius: 26px;
+    height:52px;
+    line-height:52px;
+    width:60%;
+  }
+  .waitJudge-text>p{
+    background:#56bfb3;
+    color: white;
+  }
+  .reject-text>p{
+    background: rgba(255,180,0,0.16);
+    color:rgba(255,180,0,1)
+  }
+  .expired-text>p{
+    background: rgba(173,173,173,0.16);
+    color:rgba(173,173,173,1)
+  }
+  .product-mask{
+    position:absolute;
+    color:white;
+    top:0;left:0;right:0;bottom:0;
+    background: rgba(0, 0, 0, 0.5);
+    animation: fade 0.5s linear;
+    z-index:888;
+  } 
+  .product-mask>img, .notNormal-text>.lock-icon{
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    z-index:9999;
+  }
+  .product-top{
     display:flex;
     padding-bottom:11px;
     border-bottom: 1px dotted #e1e1e1;
     align-items:center;
     margin-bottom:27px;
   }
-  #body .productList .product .product-top img{
+  .product-top img{
     width:50px;
     height:50px;
     margin-right:22px;
   }
-  #body .productList .product .product-top .title{
-    font-size:24px;
+  .product-top .title{
+    font-size:1.5vw;
     color:#333333;
     margin-bottom:0px;
   }
-  #body .productList .product .product-top .product-id{
+  .product-top .product-id{
     font-size:12px;
     color:#1fb5ad;
   }
-  #body .productList .product .product-bottom{
+  .product-bottom{
     font-size:14px;
     color:#95A0AA;
     display: flex;
     align-items:flex-start;
     justify-content:space-around;
   }
-  #body .productList .product .product-bottom .left .text{
+  .product-bottom .left .text{
     margin-bottom:15px;
   }
-  #body .productList .product .product-bottom .number{
+  .product-bottom .number{
     color:#333333;
   }
-  #body .productList .product .product-bottom .right{
+  .product-bottom .right{
     position: relative;
   }
-  #body .productList .product .product-bottom .right circle{
+  .product-bottom .right circle{
     stroke-width: 8px;
     transform-origin: center;
   }
-  #body .productList .product .product-bottom .right .progress-background{
+  .product-bottom .right .progress-background{
     transform: scale(0.9);
     stroke: #999999;
   }
-  #body .productList .product .product-bottom .right .progress-bar{
+  .product-bottom .right .progress-bar{
     transform: scale(0.9) rotate(-90deg);
     stroke: #FA7252;
   }
-  #body .productList .product .product-bottom .right .percent{
+  .product-bottom .right .percent{
     text-align center
-    width 48px
+    width 60px
     height 49px
     font-size:21px;
     color:#FA7252;
     position:absolute;
     top:15px;
-    left:50%;
+    left:43%;
     margin-left -24px
   }
-  #body .productList .product .product-bottom .right .percent .text{
+  .product-bottom .right .percent .text{
     font-size:12px;
     color:#999999;
   }
@@ -399,5 +699,8 @@
     align-items:center;
     justify-content:center;
 
+  }
+  .page-bar{
+    margin-bottom:60px;
   }
 </style>

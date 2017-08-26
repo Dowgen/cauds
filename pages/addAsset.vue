@@ -9,8 +9,8 @@
                     <li>
                         <a href="javascript:void(0);" onclick="location.href='/apiDetail'">资产面板</a>
                     </li>
-                    <li>
-                        <a href="javascript:void(0);" class="navClicked" onclick="location.href='/addAsset'">添加资产</a>
+                    <li v-show="userType==1">
+                        <a href="jaevascript:void(0);" class="navClicked" onclick="location.href='/addAsset'">添加资产</a>
                     </li>
                     <li>
                         <a href="javascript:void(0);">其他</a>
@@ -61,9 +61,38 @@
             <div class="information-box">
               <div class="name">资产周期：</div>
               <input v-model="cycle" type="number"/>
-              <div class="unit">天</div>
+              <div class="unit"></div>
             </div>
-            <div class="save-btn" @click="addProperty">保存</div>
+            <div class="information-box">
+              <div class="name">资金方机构名称：</div>
+              <select style="width:270px" v-model="orgId" @change="getOrgName(orgId)">
+                <option v-for="item in orgList" :value="item.orgId">{{item.orgName}}</option>
+              </select>
+              <div class="unit"></div>
+            </div>
+            <div class="information-box">
+              <div class="name">进件开始时间：</div>
+              <input id="startTime" placeholder="请输入日期" class="laydate-icon" onclick="laydate()">
+              <select v-model="startBizHour">
+                <option v-for="item in timeNum">{{item}}</option>
+              </select>
+              <select v-model="startBizMin">
+                <option v-for="item in timeNum">{{item}}</option>
+              </select>
+              <div class="unit"></div>
+            </div>
+            <div class="information-box">
+              <div class="name">进件结束时间：</div>
+              <input id="endTime" placeholder="请输入日期" class="laydate-icon" onclick="laydate()">
+              <select v-model="endBizHour">
+                <option v-for="item in timeNum">{{item}}</option>
+              </select>
+              <select v-model="endBizMin">
+                <option v-for="item in timeNum">{{item}}</option>
+              </select>
+              <div class="unit"></div>
+            </div>
+            <div class="save-btn" @click="confirmInfo">保存</div>
           </div>
           <div class="mode" v-show="modeStatus">
             <div class="tradeStructure">
@@ -123,7 +152,7 @@
               </div>
               </div>
             </div>
-            <div class="save-btn">
+            <div class="save-btn2">
               保存并添加资产
             </div>
           </div>
@@ -160,62 +189,157 @@ export default {
   },
   head: {
     title: '添加资产',
+    /*link:[{rel: 'stylesheet',href:'js/laydate/need/ladate.css'}],*/
     script: [
       { src: 'js/jQuery.min.js' },
       { src: 'js/layer.js' },
-      { src: 'js/bootstrap.min.js' }
+      { src: 'js/bootstrap.min.js' },
+      { src: 'js/laydate/laydate.js' }
     ]
   },
   data () {
     return {
+      userType:'',
+      froma:'',
       basicStatus:true,
       modeStatus:false,
       apiAdress:false,
       picked: '',
       token: '',
-      name: '',
-      size: '',
-      cycle: '',
+      name: '',  //资产包名称
+      size: '',  //资产总额
+      cycle: '', //资产周期
+      assetCompany:'', //资产方名称
+      assetCompanyId:'', //资产方id
+      orgId: '', //资金方id
+      orgName:'',//资金方名称
+      startTime:'',//进件开始时间
+      endTime:'',//进件结束时间
+      orgList: [], //机构列表
       avatar: '/img/assets/add_logo.png', //初始图片,
       localStorage: '',
+      product:{},  //sessionStorage里的数据
+      baseUrl: '',
+      timeNum:[],  //时间数字（1-60）
+      startBizHour: '00',  //进件开始时间（小时）
+      startBizMin: '00',   //进件开始时间（分钟）
+      endBizHour: '00',  //进件结束时间（小时）
+      endBizMin: '00'    //进件结束时间（分钟）
     }
   },
   created(){
-    /*this.getToken();*/
-    if(process.browser){
+    if(process.browser) {
       this.localStorage = localStorage;
-      console.log(this.localStorage)
+      this.userType = localStorage.userType;
     }
+    this.baseUrl = axios.defaults.baseURL;
+    // 时间数字(1-60)生成
+    for(let i=0;i<=59;i++)
+      if(i<=9) this.timeNum.push('0'+i);
+      else this.timeNum.push(i.toString())
   },
   mounted() {
-    if(process.browser)
+    this.getOrg();
+    if(process.browser){
       $('#myScrollspy').height( $(document).height() - 80);
+      var data = JSON.parse(this.localStorage.data).data;
+      this.assetCompany = data.userInfo.org_name; //不是重新添加的话，就从local里拿
+      this.assetCompanyId = data.userInfo.org_id; //不是重新添加的话，就从local里拿
+
+      this.product=JSON.parse(sessionStorage.product);
+      //如果是重新添加，生成已有值
+      let froma = this.GetQueryString('from');
+      this.froma = froma;
+      if(froma == 'reAdd'){
+        //注释掉，因为reAdd的时候logo也没了，所以得让用户必须重新提交logo
+        /*this.avatar = this.baseUrl + '/cauds-exchange/assetImge/'+ this.product.assetLogo*/
+        this.name = this.product.assetName
+        this.size = this.product.assetSize
+        this.cycle = this.product.assetCycle
+        this.assetCompany = this.product.assetCompany  //重新添加的话，就从session里拿
+        this.assetCompanyId = this.product.assetCompanyId  //重新添加的话，就从session里拿
+      }
+    }
   },
   methods: {
-    addProperty(){
+    /* 得到url参数 */
+    GetQueryString (name){
+      /* 判断一下是否在浏览器内，否则window是undefined的 */
+      if (process.browser) {
+        var reg = new RegExp("(^|&)"+ name +"=([^&]*)(&|$)");
+        var r = window.location.search.substr(1).match(reg);
+        if(r!=null)return  unescape(r[2]); return null;
+      }
+    },
+    getOrg(){  //获得机构label列表
       var that = this;
-      if(that.name =='' || that.size=='' || that.cycle=='' 
-        || $("#upfile").get(0).files.length === 0){
+      var data = JSON.parse(that.localStorage.data).data;
+      axios({
+        method:'get',
+        url:"/cauds-account/user/org/list?orgId=" + data.orgInfo.orgId +
+          '&orgType=' + data.orgInfo.type,
+        headers: {
+          sessionId: data.sessionId,
+          authKey: data.authKey
+        }
+      })
+      .then( rs=>  {
+        that.orgList = rs.data.data;
+    })
+      .catch( /*err => window.location.href = '/login'*/)
+    },
+    getOrgName(id){
+      var list = this.orgList;
+      for(let i in list){
+        if(list[i].orgId === id)
+          this.orgName = list[i].orgName;
+      }
+    },
+    confirmInfo(){
+      var that = this;
+      if(that.name =='' || that.size=='' || that.cycle=='' || that.orgId == '' || 
+         $('#startTime').val() == '' || $('#endTime').val() == '' 
+         || $("#upfile").get(0).files.length === 0){
         toastr.warning('图片和信息请填写完整!');
       }else{
-        axios({
-          method:'post',
-          url:'/cauds-exchange/asset/create',
-          headers: {
-            Accept:'application/json',
-            Authorization: 'Bearer ' + that.localStorage.token
-          },
-          data: {
-            assetName: that.name,
-            assetSize: that.size,
-            assetCycle: that.cycle,
-          }
-        })
-        .then( rs => {
-          that.uploadImg(rs.data.assetId);
-        })
-        .catch( err => alert(err));
+        layer.confirm('确定添加资产包?', {icon: 1, title:'提示'}, function(index){
+          layer.close(index);
+          that.addProperty();
+        });
       }
+    },
+    addProperty(){
+      var that = this;
+      var myUrl = '/cauds-exchange/asset/create';
+      var myData = {
+        assetName: that.name,
+        assetSize: that.size,
+        assetCycle: that.cycle,
+        assetCompany: that.assetCompany,
+        assetCompanyId: that.assetCompanyId,
+        moneyCompany: that.orgName,
+        moneyCompanyId: that.orgId,
+        entranceStartTime: $('#startTime').val(),
+        entranceEndTime: $('#endTime').val()
+      }
+      //判断是否重加
+      if(that.froma == 'reAdd'){
+        myUrl = '/cauds-exchange/asset/reCreate';
+        myData.assetId = that.product.assetId;
+      }
+      axios({
+        method:'post',
+        url: myUrl,
+        headers: {
+          Accept:'application/json',
+          Authorization: 'Bearer ' + that.localStorage.token
+        },
+        data: myData
+      })
+      .then( rs => {
+          that.uploadImg(rs.data.assetId);
+      })
+      .catch( err => alert(err));
     },
     preivewImg() {
       /* 用fileReader实现图片预览 */
@@ -246,10 +370,10 @@ export default {
         data: fd
       })
       .then( rs => {
-        toastr.success('资产创建成功!');
-        setTimeout("window.location.href = './apiDetail'",700);
+        layer.msg('资产创建成功!',{time:2000});
+        /*setTimeout("window.location.href = './apiDetail'",700);*/
       })
-      .catch( err => window.location.href = '/login');
+      .catch( /*err => window.location.href = '/login'*/);
     },
     showMode(){
       this.basicStatus = false;
@@ -272,23 +396,26 @@ export default {
   display:flex;
   align-items:center;
 }
+#body .title-box img{
+  cursor: pointer;
+}
 #body .title-box .title{
   font-size:20px;
   margin-left:10px;
 }
-#body .procedure{
+.procedure{
   width:98%;
   height:87vh;
   background:#ffffff;
   border-radius:10px;
 }
-#body .procedure .step ul{
+.step ul{
   display:flex;
   padding:31px 0 0 23px;
   margin:0;
   
 }
-#body .procedure .step ul .step-name{
+.step ul .step-name{
   list-style:none;
   width:100px;
   text-align:center;
@@ -296,34 +423,32 @@ export default {
   height:30px;
   
 }
-#body .procedure .step ul .current{
+.step ul .current{
   color:#1FB5AD;
   border-bottom:1px solid #1FB5AD;
 }
-#body .procedure .line{
+.line{
   width:90%;
   height:1px;
   background:#E1E1E1;
   margin-left:23px;
 }
-#body .procedure .basic-wrapper{
+.basic-wrapper{
   width:100%;
 }
-#body .procedure .basic-wrapper .basic-information{
-  width:400px;
-  height:400px;
+.basic-information{
   margin:0 auto;
   margin-top:100px;
 }
-#body .procedure .basic-wrapper .basic-information .market{
+.market{
   font-size:12px;
   color:#666666;
   margin-bottom:51px;
   display:flex;
   align-items:center;
+  justify-content: center;
 }
-#body .procedure .basic-wrapper .basic-information .market .name{
-  width:80px;
+.market .name{
   text-align:end;
 }
 #upfile{
@@ -339,49 +464,69 @@ export default {
   display: inline-block;
   position: relative;
 }
-#body .procedure .basic-wrapper .basic-information .market .img-wrapper{
+.market .img-wrapper{
   width:270px;
   text-align:center;
 }
-#body .procedure .basic-wrapper .basic-information .market .img-wrapper img{
+.market .img-wrapper img{
   margin-bottom:15px;
   width: 63px;
   height: 63px;
 }
-#body .procedure .basic-wrapper .basic-information .market .img-wrapper .text{
+.market .img-wrapper .text{
   font-size:12px;
   color:#999999;
 }
-#body .procedure .basic-wrapper .basic-information .information-box{
+.information-box{
   font-size:12px;
   color:#666666;
   margin-bottom:16px;
   display:flex;
   align-items:center;
   height:30px;
-  justify-content:space-around;
+  justify-content:center;
 }
-#body .procedure .basic-wrapper .basic-information .information-box .name{
-  width:80px;
+.information-box .name{
+  width:100px;
   text-align:end;
 }
-#body .procedure .basic-wrapper .basic-information .information-box input{
+.information-box input{
   border:1px solid #e1e1e1;
   width:270px;
   border-radius:6px;
   height:30px;
   outline:none;
-  
+  padding-left: 10px;
+  margin-right: 5px;
 }
-#body .procedure .basic-wrapper .basic-information .information-box input:focus{
+
+.information-box input:focus{
   border:1px solid #1FB5AD;
   border-radius:6px;
   height:30px;
 }
-#body .procedure .basic-wrapper .basic-information .information-box .unit{
+.information-box .unit{
   width:30px;
 }
-#body .procedure .basic-wrapper .basic-information .save-btn{
+.information-box select{
+  width: 50px;
+  height: 30px;
+  border: solid 1px #ccc;
+  appearance:none;
+  background: url("/img/assets/time_choose.png") no-repeat scroll right center transparent;
+  padding-right: 14px;
+  padding-left: 10px;
+  border-radius: 6px;
+  margin-right: 4px;
+  outline: none;
+}
+.information-box select option{
+  text-align: center;
+}
+.laydate-icon{
+  width:160px !important;
+}
+.save-btn{
   width:100px;
   height:32px;
   line-height:32px;
@@ -393,26 +538,23 @@ export default {
   border-radius:3px;
   cursor:pointer;
 }
-#body .procedure .basic-wrapper .mode{
-
-}
-#body .procedure .basic-wrapper .mode .tradeStructure{
+.mode .tradeStructure{
   display:flex;
   margin:30px 0 80px 40px;
   width:170px;
   height:30px;
   align-items:center;
 }
-#body .procedure .basic-wrapper .mode .tradeStructure .text{
+.tradeStructure .text{
   font-size:16px;
   color:#fa8564;
   margin-left:8px;
 }
-#body .procedure .basic-wrapper .mode .mode-wrapper{
+.mode-wrapper{
   display:flex;
   padding:0 40px;
 }
-#body .procedure .basic-wrapper .mode .mode-wrapper .mode-box{
+.mode-box{
   position:relative;
   flex:1;
   width:313px;
@@ -423,16 +565,16 @@ export default {
   display:flex;
   align-items:center;
 }
-#body .procedure .basic-wrapper .mode .mode-wrapper .mode-box:last-child{
+.mode-box:last-child{
   margin-right:0;
 }
-#body .procedure .basic-wrapper .mode .mode-wrapper .mode-box .left{
+.mode-box .left{
   width:45px;
   height:100%;
   background:#1FB5AD;
   padding-top:20px;
 }
-#body .procedure .basic-wrapper .mode .mode-wrapper .mode-box .left .number{
+.mode-box .left .number{
   width:20px;
   height:20px;
   margin:0 auto;
@@ -444,20 +586,20 @@ export default {
   line-height:20px;
   text-align:center;
 }
-#body .procedure .basic-wrapper .mode .mode-wrapper .mode-box .left  .moder-name{
+.mode-box .left  .moder-name{
   width:20px;
   color:#FFFFFF;
   font-size:16px;
   margin:0 auto;
 }
-#body .procedure .basic-wrapper .mode .mode-wrapper .mode-box .middle{
+.mode-box .middle{
   font-size:14px;
   color:#666666;
 }
-#body .procedure .basic-wrapper .mode .mode-wrapper .mode-box .middle .mode-text{
+.mode-box .middle .mode-text{
   margin-bottom:16px;
 }
-#body .procedure .basic-wrapper .mode .mode-wrapper .mode-box .payBtn{
+.mode-box .payBtn{
   position:absolute;
   right:22px;
   top:65px;
@@ -467,20 +609,20 @@ export default {
   border-radius:50%;
   
 }
-#body .procedure .basic-wrapper .mode .mode-wrapper .mode-box .payBtn input{
+.mode-box .payBtn input{
   width:100%;
   height:100%;
   margin:0;
   opacity:0;
 }
-#body .procedure .basic-wrapper .mode .mode-wrapper .mode-box .payBtn img{
+.mode-box .payBtn img{
   position:absolute;
   top:0;
   left:0;
   width:30px;
   height:30px;
 }
-#body .procedure .basic-wrapper .mode .save-btn{
+.save-btn2{
   width:227px;
   height:41px;
   text-align:center;

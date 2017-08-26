@@ -8,6 +8,11 @@
         </div>
       </div>
       <div class="right">
+        <!-- <div class="mode-chose">
+          <span class="mode0" @click="choose(0)">资金端登录</span>
+          <img src="img/login/button1.png">
+          <span class="mode1" @click="choose(1)">资产端登录</span>
+        </div> -->
         <input v-model="account" placeholder="请输入账号">
         <input v-model="code" placeholder="请输入密码">
         <div class="regist" @click="submit">登录</div>
@@ -45,17 +50,32 @@
       ]
     },
     created () {
-        /*this.getToken();*/
+      
     },
-
     data () {
       return {
+        chosed: 0, //用户选择资金方还是资产方
         account:'',
         code:'',
         token:''
       }
     },
     methods: {
+      choose(mode){ //资金方还是资产方判断
+        if(process.browser){
+          if(mode === 0){
+            this.chosed = 0;
+            $('.mode-chose').css('background',"url('/img/login/choose_bg1.png') no-repeat");
+            $('.mode0').css('color','white')
+            $('.mode1').css('color','#aaa');
+          }else if(mode === 1){
+            this.chosed = 1;
+            $('.mode-chose').css('background',"url('/img/login/choose_bg2.png') no-repeat");
+            $('.mode0').css('color','#aaa')
+            $('.mode1').css('color','white');
+          }
+        }
+      },
       /*getToken(){
         var that = this;
         axios({
@@ -117,11 +137,12 @@
             }],
           })
           .then(function(response) {
-              console.log(response)
             if (response.data.code == 200) {
-              /* console.log(response.data.userInfo); */
+              /*that.$store.commit('changeData',response.data.data);*/
+              console.log(response.data.userInfo); 
               localStorage.data = JSON.stringify(response.data);
               localStorage.token = response.data.data.access_token;
+              localStorage.userType = response.data.data.orgInfo.type; //1资产 2资金
               location.href = '/apiDetail'
             }else {
               toastr.warning('账号不存在或密码有误');
@@ -172,6 +193,7 @@
     color:#FFFFFF;
   }
   .row .register-box .right{
+    position: relative;
     width:100%;
     height:100%;
     padding:128px 40px 0;
@@ -209,5 +231,31 @@
     font-size:14px;
     color:#B8BEC1;
     cursor:pointer;
+  }
+  .mode-chose{
+    position: absolute;
+    top: -9px;
+    left: 24%;
+    display: flex;
+    background: url('/img/login/choose_bg1.png') no-repeat;
+    background-size: 100% 100%;
+    width: 270px;
+    height: 50px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+  }
+  .mode-chose span{
+    width: 100px;
+    height: 38px;
+    text-align: center;
+    line-height: 34px;
+  }
+  .mode0{
+    color: white;
+  }
+  .mode1{
+    color: #aaa;
   }
 </style>

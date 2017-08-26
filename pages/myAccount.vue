@@ -41,12 +41,12 @@
           </div>
           <div class="item item1">
             <div class="name">手机</div>
-            <div class="previous" v-show="!modifyPhoneStatus">
+            <div class="previous" v-show="!modifyPhoneStatus" @mouseover="modifyPhoneStatus=true">
               <div class="text">{{realPhone}}</div>
               <div class="modify" @click="modifyPhone">修改</div>
             </div>
             <div class="modify-box" v-show="modifyPhoneStatus">
-              <input v-model="phone" autofocus="autofocus">
+              <input v-model="phone" autofocus="autofocus" :placeholder="realPhone">
               <div class="save-btn" @click="savePhone">保存</div>
               <div class="cansel-btn" @click="cancelPhone">取消</div>
             </div>
@@ -60,12 +60,12 @@
           <div class="subtitle">业务信息</div>
           <div style="height:36px;" class="item">
             <div class="name">公司名称</div>
-            <div class="previous" v-show="!modifyNameStatus">
+            <div class="previous" v-show="!modifyNameStatus" @mouseover="modifyNameStatus=true">
               <div class="text">{{realCompanyName}}</div>
               <div class="modify" @click="modifyName">修改</div>
             </div>
             <div class="modify-box" v-show="modifyNameStatus">
-              <input v-model="companyName" autofocus="autofocus">
+              <input v-model="companyName" autofocus="autofocus" :placeholder="realCompanyName">
               <div class="save-btn" @click="saveName">保存</div>
               <div class="cansel-btn" @click="cancelName">取消</div>
             </div>
@@ -399,6 +399,7 @@
     text-align:center;
     font-size:14px;
     color:#1fb5ad;
+    cursor:pointer;
   }
   #body .top .avatar .img-wrapper img{
     width: 74px;
@@ -407,7 +408,7 @@
   #body .top .avatar .img-wrapper .text{
     margin-top:12px;
   }
-  #body .top .item{
+  .item{
     display:flex;
     align-items:center;
     margin-bottom:40px;
@@ -415,18 +416,27 @@
   #body .top .item1{
     height 36px
   }
-  #body .top .item .previous{
+  .previous{
     display:flex;
     align-items:center;
+    cursor:pointer;
   }
-  #body .top .item .previous .modify{
+  .previous .modify{
     margin-left 34px
   }
-  #body .top .item .modify-box{
+  .previous:hover .text{
+    width: 290px;
+    height: 36px;
+    line-height: 36px;
+    border-radius: 6px;
+    border: 1px solid #c5dddb;
+    outline: none;
+  }
+  .modify-box{
     display:flex;
     align-items:center;
   }
-  #body .top .item .modify-box .save-btn{
+  .save-btn{
     margin-left:27px;
     width:60px;
     height:36px;
@@ -439,35 +449,16 @@
     line-height:36px;
     cursor:pointer;
   }
-  #body .top .item .modify-box input{
+  .modify-box input{
     width:290px;
     height:36px;
     border-radius:6px;
     border:1px solid #c5dddb;
     outline:none;
   }
-  #body .top .item .modify-box input:focus{
+  .modify-box input:focus{
     border-radius:6px;
     border:1px solid #1fb5ad;
-  }
-  #body .top .item .modify-box .cansel-btn{
-    width:60px;
-    height:36px;
-    font-size:16px;
-    color:#555555;
-    border-radius:6px;
-    border:1px solid #b3b3b3;
-    text-align:center;
-    line-height:36px;
-    cursor:pointer;
-  }
-  #body .top .avatar .name,#body .top .item .name{
-    width:60px;
-    text-align:right;
-    font-size:14px;
-    color:#808080;
-    margin-right:20px;
-
   }
   #body .top .avatar .name{
     margin-right:37px;
@@ -489,39 +480,16 @@
     display:flex;
     align-items:center;
   }
-  #body .bottom .item .previous{
+  .previous{
     display:flex;
     align-items:center;
   }
-  #body .bottom .item .modify-box{
+  .modify-box{
     display:flex;
     align-items:center;
   }
-  #body .bottom .item .modify-box .save-btn{
-    margin-left:27px;
-    width:60px;
-    height:36px;
-    font-size:16px;
-    color:#ffffff;
-    background:#1FB5AD;
-    border-radius:6px;
-    margin-right:14px;
-    text-align:center;
-    line-height:36px;
-    cursor:pointer;
-  }
-  #body .bottom .item .modify-box input{
-    width:290px;
-    height:36px;
-    border-radius:6px;
-    border:1px solid #c5dddb;
-    outline:none;
-  }
-  #body .bottom .item .modify-box input:focus{
-    border-radius:6px;
-    border:1px solid #1fb5ad;
-  }
-  #body .bottom .item .modify-box .cansel-btn{
+
+  .modify-box .cansel-btn{
     width:60px;
     height:36px;
     font-size:16px;
@@ -532,13 +500,19 @@
     line-height:36px;
     cursor:pointer;
   }
-  #body .bottom .item .modify{
+  .modify-box{
+    cursor:pointer;
+  }
+  .modify-box>input{
+    padding-left:10px
+  }
+  .modify{
     font-size:14px;
     color:#1fb5ad;
     margin-left:34px;
     cursor:pointer;
   }
-  #body .bottom .item .name{
+  .name{
     width:60px;
     text-align:right;
     font-size:14px;

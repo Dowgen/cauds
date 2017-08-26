@@ -9,7 +9,7 @@
               <li>
                 <a href="javascript:void(0);" onclick="location.href='/apiDetail'">资产面板</a>
               </li>
-              <li>
+              <li v-if="userType==1">
                 <a href="javascript:void(0);" onclick="location.href='/addAsset'">添加资产</a>
               </li>
               <li>
@@ -33,9 +33,13 @@
               <img :src="baseUrl + '/cauds-exchange/assetImge/'+ product.assetLogo">
               <div class="content">
                 <div class="title">{{product.assetName}}</div>
-                <div class="time">注册时间：{{product.createTime}}</div>
-                <div class="product-id">ID:{{product.assetId}}</div>
+                <div class="time">资产周期：{{product.assetCycle}}</div>
+                <div class="product-id">资产ID:
+                  <span style="color:#222;margin:0 30px 0 10px;top:2px">***********</span>
+                  <span class="check-id" @click="toggleIdShow">查看</span>
+                </div>
               </div>
+              <div class="show-id" v-show="idShow">资产ID: {{product.assetId}}</div>
             </div>
             <div class="middle">
               <div class="amount">
@@ -47,8 +51,8 @@
                 <div class="text">放贷金额（万元）</div>
               </div>
               <div class="time">
-                <div class="number">{{product.assetCycle}}</div>
-                <div class="text">资产周期（天）</div>
+                <div class="number">{{product.assetRepayed/10000}}</div>
+                <div class="text">还款金额（万元）</div>
               </div>
             </div>
             <div class="right">
@@ -224,6 +228,8 @@
     },
     data () {
       return {
+        userType:'',
+        idShow:false,
         basicStatus:true,
         modeStatus:false,
         apiAdress:false,
@@ -238,7 +244,10 @@
       }
     },
     created(){
-      if(process.browser) this.localStorage = localStorage
+      if(process.browser) {
+        this.localStorage = localStorage;
+        this.userType = localStorage.userType;
+      }
       this.baseUrl = axios.defaults.baseURL;
     },
     computed: {
@@ -256,6 +265,15 @@
       }
     },
     methods: {
+      toggleIdShow(){
+        if(this.idShow) {
+          this.idShow = false;
+          $('.check-id').html('查看')
+        }else {
+          this.idShow = true;
+          $('.check-id').html('收起')
+        }
+      },
       showMode(){
         this.basicStatus=false;
         this.modeStatus=true;
@@ -276,11 +294,10 @@
           data: {
           },
         })
-        .then(function(response) {
-            that.productDetail=response.data;
-          console.log(response)
+        .then( res=> {
+            that.productDetail=res.data;
         })
-        .catch(function (error) {
+        .catch( err=> {
           window.location.href = '/login'
         });
       }
@@ -320,133 +337,150 @@
     border-bottom:1px dotted #999999;
     justify-content: space-between;
   }
-  #body .procedure .top .left{
+  .left{
+    position:relative;
     display:flex;
     align-items: center;
     border-right:1px solid #E1E1E1;
     height:130px;
     padding-right:23px;
   }
-  #body .procedure .top .left img{
+  .left img{
     width:126px;
     height:126px;
     border-radius 30px
   }
-  #body .procedure .top .left .content{
+  .left .content{
     margin-left 26px
     width 180px
+    color #999
   }
-  #body .procedure .top .left .content .title{
+  .left .content .title{
     margin-bottom:17px;
     font-size:18px;
     color:#000000;
   }
-  #body .procedure .top .left .content .time{
+  .left .content .time{
     font-size:18px;
     color:#999999;
     margin-bottom:17px;
   }
-  #body .procedure .top .left .content .product-id{
-    font-size:12px;
-    color:#1FB5AD;
+  .check-id{
+    color:#1fb5ad;
+    font-size:14px;
+    cursor:pointer;
   }
-  #body .procedure .top .middle{
+  .show-id{
+    position: absolute;
+    bottom: -75px;
+    width: 100%;
+    text-align: center;
+    border: solid 1px #1fb5ad;
+    border-radius: 14px 14px 0 0;
+    border-bottom: none;
+    font-size: 15px;
+    color: #1fb5ad;
+    height: 25px;
+    line-height: 25px;
+  }
+  .middle{
     display:flex;
     height:130px;
     align-items:center;
     padding: 0 30px;
-
   }
-  #body .procedure .top .middle .amount{
+  .middle .amount{
     width:120px;
     height:80px;
     text-align:center;
     margin-right:30px;
   }
-  #body .procedure .top .middle .amount .number{
+  .middle .amount .number{
     font-size:34px;
     color:#A9D86E;
   }
-  #body .procedure .top .middle .amount .text{
+  .middle .amount .text{
     font-size:14px;
     color:#A9D86E
   }
-  #body .procedure .top .middle .pay{
+  .middle .pay{
     width:120px;
     height:80px;
     text-align:center;
     margin-right:30px;
   }
-  #body .procedure .top .middle .pay .number{
+  .middle .pay .number{
     font-size:34px;
-    color:#FF5C5C;
+    color:#fcb01f;
   }
-  #body .procedure .top .middle .pay .text{
+  .middle .pay .text{
     font-size:14px;
-    color:#FF5C5C;
+    color:#fcb01f;
   }
-  #body .procedure .top .middle .time{
+  .middle .time{
     width:120px;
     height:80px;
     text-align:center;
     color:#F86B4F;
     font-size:34px;
   }
-  #body .procedure .top .middle .time .text{
+  .middle .time .text{
     font-size:14px;
   }
-  #body .procedure .top .right{
+  .right{
     position: relative;
   }
-  #body .procedure .top .right circle{
+  .right circle{
     stroke-width: 8px;
     transform-origin: center;
   }
-  #body .procedure .top .right .progress-background{
+  .right .progress-background{
     transform: scale(0.9);
     stroke: #999999;
   }
-  #body .procedure .top .right .progress-bar{
+  .right .progress-bar{
     transform: scale(0.9) rotate(-90deg);
     stroke: #FA7252;
   }
-  #body .procedure .top .right .percent{
+  .right .percent{
     font-size:34px;
     color:#FA7252;
     position:absolute;
     top:50px;
-    left:50px;
+    left:0;
+    right:0;
+    text-align:center;
   }
   #body .trade{
     padding:38px 58px;
   }
-  #body .trade .title{
+  .trade .title{
     margin-bottom:41px;
     font-size:21px;
     color:#333333;
   }
-  #body .trade .table thead{
+  .table thead{
     background:#1fb5ad;
     color:#ffffff;
   }
-  #body .trade .table thead tr{
+  .table thead tr{
 
   }
-  #body .trade .table thead tr th{
+  .table thead tr th{
     height:53px;
     line-height:53px;
     text-align:center;
   }
-  #body .trade .table tbody tr{
+  .table tbody tr{
 
   }
-  #body .trade .table tbody tr td{
+  .table tbody tr td{
     height:53px;
     line-height:53px;
     text-align:center;
     color:#666666;
   }
-  #body .trade .table tbody tr .text{
+  .table tbody tr .text{
     display:inline-block;
     width:52px;
     height:27px;
