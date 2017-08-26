@@ -9,7 +9,7 @@
               <li>
                 <a href="javascript:void(0);" onclick="location.href='/apiDetail'">资产面板</a>
               </li>
-              <li v-if="userType==1">
+              <li v-show="userType==1">
                 <a href="javascript:void(0);" onclick="location.href='/addAsset'">添加资产</a>
               </li>
               <li>
