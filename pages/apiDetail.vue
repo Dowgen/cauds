@@ -28,7 +28,7 @@
             <h3>业务状态:</h3>
             <div class="radio">
               <div  v-for="(item,index) in bizList">
-                <input type="checkbox" :id="'checkbox'+index" checked="true">
+                <input type="checkbox" :id="'checkbox'+index">
                 <label :for="'checkbox'+index" @click="changeChannel('bizChoseList',index,item.id)">{{item.name}}</label>
               </div>  
             </div>
@@ -37,7 +37,7 @@
             <h3>机构名称:</h3>
             <div class="radio">
             <div  v-for="(item,index) in orgList">
-              <input type="checkbox" :id="'checkboxB'+index" checked="true">
+              <input type="checkbox" :id="'checkboxB'+index">
               <label :for="'checkboxB'+index" @click="changeChannel('orgChoseList',index,item.orgId)">{{item.orgName}}</label>
             </div>
           </div>
@@ -53,7 +53,9 @@
           @mouseover="showMask(item.assetId,item.assetStatus,index)" 
           @mouseleave="unshowMask(item.assetStatus,index)" @click.stop="jump(item,0)">
           <div  :style="item.assetStatus == 1&&userType==2 || item.assetStatus == 2 ||item.assetStatus == 7 || item.assetStatus == 8?{opacity:0.5}:''">
-            <div style="position:absolute;right:0">
+            <!-- 下方数组表示有label的status -->
+            <div style="position:absolute;right:0"   
+                 v-show="[1,3,4,5,6].indexOf(item.assetStatus) != -1"> 
               <img :src="'/img/apiDetail/'+item.assetStatus + '.png'">
             </div>
             <div class="product-top">
@@ -275,8 +277,6 @@
         })
         .then( rs=>  {
           that.bizList = rs.data.data;
-          for(let i in that.bizList) 
-            that.bizChoseList.push(that.bizList[i].id)
           that.getOrg();
       })
         .catch( /*err => window.location.href = '/login'*/)
@@ -295,8 +295,6 @@
         })
         .then( rs=>  {
           that.orgList = rs.data.data;
-          for(let i in that.orgList) 
-            that.orgChoseList.push(that.orgList[i].orgId)
           that.findAssets();
       })
         .catch( /*err => window.location.href = '/login'*/)

@@ -79,7 +79,7 @@
             <img :src="reAddPic">
           </div>
         </div>
-        <div class="deleteAsset">
+        <div class="deleteAsset" v-show="userType==1">
           <button type="button" class="btn btn-danger" @click="deleteAsset">删除资产包</button>
         </div>
       </div>
