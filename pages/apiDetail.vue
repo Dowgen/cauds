@@ -56,7 +56,7 @@
             <!-- 下方数组表示有label的status -->
             <div style="position:absolute;right:0"   
                  v-show="[1,3,4,5,6].indexOf(item.assetStatus) != -1"> 
-              <img :src="'/img/apiDetail/'+item.assetStatus + '.png'">
+              <img v-show="userType==1||userType==2&&item.assetStatus!=1":src="'/img/apiDetail/'+item.assetStatus + '.png'">
             </div>
             <div class="product-top">
               <img :src="baseUrl + '/cauds-exchange/assetImge/'+ item.assetLogo">
@@ -86,22 +86,17 @@
             </div>
             <div class="notNormal-text waitJudge-text" v-show="item.assetStatus == 1 && userType== '2'" @click.stop="jump(item,1)">
               <p :id="'wait'+index">等待审核</p>
-              <img v-show="item.assetStatus != 7&& userType==2" @click.stop="lockAsset(item.assetId)" title="锁定资产" src="/img/apiDetail/white_lock.png" class="lock-icon">   
             </div>
             <div class="notNormal-text reject-text" v-show="item.assetStatus == 2" @click.stop="jump(item,2)">
               <p :id="'reject'+index">审核被驳回</p>
-              <img v-show="item.assetStatus != 7&& userType==2" @click.stop="lockAsset(item.assetId)" title="锁定资产" src="/img/apiDetail/white_lock.png" class="lock-icon">   
             </div>
             <div class="notNormal-text expired-text" v-show="item.assetStatus == 8" @click.stop="jump(item,3)">
               <p :id="'expired'+index">资产过期</p> 
-              <img v-show="item.assetStatus != 7&& userType==2" @click.stop="lockAsset(item.assetId)" title="锁定资产" src="/img/apiDetail/white_lock.png" class="lock-icon">   
             </div>
             <div class="notNormal-text lock-text" v-show="item.assetStatus == 7" @click.stop="">
               <img src="/img/apiDetail/belocked.png">
-              <img v-show="item.assetStatus != 7&& userType==2" @click.stop="lockAsset(item.assetId)" title="锁定资产" src="/img/apiDetail/white_lock.png" class="lock-icon">   
             </div>
             <div class="product-mask" v-show="showPdctId == item.assetId">   
-              <img v-show="item.assetStatus != 7&& userType==2" @click.stop="lockAsset(item.assetId)" title="锁定资产" src="/img/apiDetail/white_lock.png" class="lock-icon">   
             </div>
           </div>
           <div v-show="userType== '1'" class="add product" onclick="location.href='/addAsset'">
@@ -184,11 +179,11 @@
       unshowMask(status,index){
         this.showPdctId = '';
         if(status == 2) {
-          $('#reject'+index).css('background','rgba(255,180,0,0.16)');
-          $('#reject'+index).css('color','rgba(255,180,0,1)');
+          $('#reject'+index).css('background','rgba(255,180,0,0.56)');
+          /*$('#reject'+index).css('color','rgba(255,180,0,1)');*/
         }else if(status == 8) {
-          $('#expired'+index).css('background','rgba(173,173,173,0.16)');
-          $('#expired'+index).css('color','rgba(173,173,173,1)');
+          $('#expired'+index).css('background','rgba(173,173,173,0.56)');
+          /*$('#expired'+index).css('color','rgba(173,173,173,1)');*/
         }
       },
       lockAsset(id){
@@ -606,12 +601,12 @@
     color: white;
   }
   .reject-text>p{
-    background: rgba(255,180,0,0.16);
-    color:rgba(255,180,0,1)
+    background: rgba(255,180,0,0.56);
+    color:white;
   }
   .expired-text>p{
-    background: rgba(173,173,173,0.16);
-    color:rgba(173,173,173,1)
+    background: rgba(173,173,173,0.56);
+    color:white;
   }
   .product-mask{
     position:absolute;
