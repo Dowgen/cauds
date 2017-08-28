@@ -179,8 +179,8 @@
       unshowMask(status,index){
         this.showPdctId = '';
         if(status == 2) {
-          $('#reject'+index).css('background','rgba(255,180,0,0.56)');
-          /*$('#reject'+index).css('color','rgba(255,180,0,1)');*/
+          $('#reject'+index).css('background','rgba(255,85,0,0.56)');
+          /*$('#reject'+index).css('color','rgba(255,85,0,1)');*/
         }else if(status == 8) {
           $('#expired'+index).css('background','rgba(173,173,173,0.56)');
           /*$('#expired'+index).css('color','rgba(173,173,173,1)');*/
@@ -601,7 +601,7 @@
     color: white;
   }
   .reject-text>p{
-    background: rgba(255,180,0,0.56);
+    background: rgba(255,85,0,0.56);
     color:white;
   }
   .expired-text>p{
