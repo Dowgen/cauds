@@ -52,9 +52,9 @@
           <div class="product" v-for="(item,index) in curList" 
           @mouseover="showMask(item.assetId,item.assetStatus,index)" 
           @mouseleave="unshowMask(item.assetStatus,index)" @click.stop="jump(item,0)">
-          <div  :style="item.assetStatus == 1&&userType==2 || item.assetStatus == 2 ||item.assetStatus == 7 || item.assetStatus == 8?{opacity:0.5}:''">
+          <div  :style="item.assetStatus == 1&&userType==2 || item.assetStatus == 2 ||item.assetStatus == 7 || item.assetStatus == 8?{opacity:0.3}:''">
             <!-- 下方数组表示有label的status -->
-            <div style="position:absolute;right:0"   
+            <div style="position:absolute;right:0;top:13px"   
                  v-show="[1,3,4,5,6].indexOf(item.assetStatus) != -1"> 
               <img v-show="userType==1||userType==2&&item.assetStatus!=1":src="'/img/apiDetail/'+item.assetStatus + '.png'">
             </div>
@@ -66,12 +66,31 @@
             </div>
             <div class="product-bottom">
               <div class="left">
-                <div class="text">资产规模：<span class="number">{{item.assetSize/10000}}万</span></div>
-                <div class="text">放贷金额：<span class="number">{{item.assetsPaid/10000}}万</span></div>
-                <div class="text">资产周期：<span class="number">{{item.assetCycle}}天</span></div>
+                <div class="text">资产规模：
+                  <span class="number">{{item.assetSize/10000}}万</span></div>
+                <div class="text">放贷金额：
+                  <span class="number">{{item.assetsPaid/10000}}万</span></div>
+                <div class="text">资产周期：
+                  <span class="number">{{item.assetCycle}}天</span></div>
+                <div class="text" v-show="[1,2,3].indexOf(item.assetStatus) != -1">
+                  进件开始：
+                  <span class="number">
+                    {{new Date(item.entranceStartTime).toLocaleDateString()}}
+                    {{new Date(item.entranceStartTime).toLocaleTimeString()}}
+                  </span>
+                </div>
+                <div class="text" v-show="item.assetStatus == 4">
+                  剩余时间：
+                  <span class="number">
+                    {{  dateDif(item.entranceEndTime) }}
+                  </span>
+                </div>
+                <div class="text" v-show="item.assetStatus >= 5">
+                  进件已结束<span class="number"></span>
+                </div>
               </div>
               <div class="right">
-                <svg width="80" height="80" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
+                <svg width="90" height="90" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
                   <circle class="progress-background" r="50" cx="50" cy="50" fill="transparent"/>
                   <circle class="progress-bar" r="50" cx="50" cy="50" fill="transparent" 
                   :stroke-dasharray="dashArray"
@@ -138,6 +157,7 @@
         dashArray: Math.PI * 100,
         token:'',
         assetList:[],
+        nowTime:'', //当前时间毫秒数
         baseUrl: '',
         localStorage: '',
         /* 分页data */
@@ -151,11 +171,18 @@
       if(process.browser){
         this.localStorage = localStorage
         this.userType = localStorage.userType;
+        this.nowTime = new Date().getTime();
       } 
       this.baseUrl = axios.defaults.baseURL;
     },
     beforeMount(){
       this.getAssetStatus();
+      //动态获取当前时间毫秒数
+      var self = this;
+      setInterval(getTime,1000)
+      function getTime(){
+        self.nowTime = new Date().getTime();
+      }
     },
     mounted() {
       if(process.browser)
@@ -186,31 +213,6 @@
           /*$('#expired'+index).css('color','rgba(173,173,173,1)');*/
         }
       },
-      lockAsset(id){
-        var that = this;
-        var data = JSON.parse(that.localStorage.data).data;
-        var lockReason = '';
-        layer.confirm('是否锁定该资产包?', {icon: 1, title:'提示'}, function(index){
-          layer.close(index);
-          layer.prompt({title: '请输入锁定原因', formType: 2}, function(text, index){
-            axios({
-              method:'get',
-              url:"/cauds-exchange/asset/lock?assetId=" + id + '&reason='+ text
-              +'&account='+ data.userInfo.account,
-              headers: {
-                Authorization: 'Bearer ' + that.localStorage.token,
-                Accept:'application/json'
-              }
-            })
-            .then( rs=>  {
-              layer.msg('锁定成功',{time:2000});
-              location.reload();
-            })
-            .catch( /*err => window.location.href = '/login'*/)
-          });
-          layer.close(index);
-        });     
-      },
       callback(data) {  //分页回调
         var start = (data-1) * this.perPage;
         var end = start + this.perPage;
@@ -232,6 +234,26 @@
       getPercent(x,y){ //百分比计算
         return (x/y*100).toFixed(1)
       },
+      dateDif(enddate){  //倒计时计算
+        var date = enddate - this.nowTime;  
+        console.log('wy');  
+        if(date <= 0){  
+          console.log('时间到');
+          return;  
+        }else{
+          var days    = date / 1000 / 60 / 60 / 24;  
+          var daysRound   = Math.floor(days);  
+          var hours    = date/ 1000 / 60 / 60 - (24 * daysRound);  
+          var hoursRound   = Math.floor(hours);  
+          var minutes   = date / 1000 /60 - (24 * 60 * daysRound) - (60 * hoursRound);  
+          var minutesRound  = Math.floor(minutes);  
+          var seconds   = date/ 1000 - (24 * 60 * 60 * daysRound) - (60 * 60 * hoursRound) - (60 * minutesRound);  
+          var secondsRound  = Math.floor(seconds);  
+          var time = daysRound+" 天 "+hoursRound +" 小时 "+
+                     minutesRound+" 分 "+secondsRound+" 秒";  
+          return time;
+        }
+      },   
       //勾选/取消 渠道复选框，更改数组数据,并调用产品列表方法
       changeChannel (list, index, id){
         var channel = this[list];
@@ -323,7 +345,7 @@
       dashOffset() {
         return (1 - 0.8) * this.dashArray
       }
-    },
+    }
   }
 </script>
 <style scoped lang="stylus" rel="stylesheet/stylus">
@@ -572,6 +594,7 @@
     border-radius:6px;
     box-sizing:border-box;
     padding:22px 16px 16px 18px;
+    box-shadow:1px 1px 15px 2px #eee;
   }
   #body .productList .product:hover{
     border:1px solid #1fb5ad;
@@ -625,7 +648,7 @@
   .product-top{
     display:flex;
     padding-bottom:11px;
-    border-bottom: 1px dotted #e1e1e1;
+    border-bottom: 1px dashed #e1e1e1;
     align-items:center;
     margin-bottom:27px;
   }
@@ -648,7 +671,8 @@
     color:#95A0AA;
     display: flex;
     align-items:flex-start;
-    justify-content:space-around;
+    justify-content:flex-start;
+    margin-left:30px
   }
   .product-bottom .left .text{
     margin-bottom:15px;
@@ -657,15 +681,16 @@
     color:#333333;
   }
   .product-bottom .right{
-    position: relative;
+    position: absolute;
+    right:3vw;
   }
   .product-bottom .right circle{
-    stroke-width: 8px;
+    stroke-width: 6px;
     transform-origin: center;
   }
   .product-bottom .right .progress-background{
     transform: scale(0.9);
-    stroke: #999999;
+    stroke: #ddd;
   }
   .product-bottom .right .progress-bar{
     transform: scale(0.9) rotate(-90deg);
@@ -678,7 +703,7 @@
     font-size:21px;
     color:#FA7252;
     position:absolute;
-    top:15px;
+    top:20px;
     left:43%;
     margin-left -24px
   }

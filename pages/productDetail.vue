@@ -65,7 +65,12 @@
             </div>
           </div>
           <div class="trade">
-            <div class="title">交易记录</div>
+            <div class="title"><p>交易记录</p>
+              <div @click="lockAsset" v-show="userType==2">
+                <img src="/img/assets/green_lock.png">
+                <span>锁定资产</span>
+              </div>
+            </div>
             <table class="table table-striped table-hover">
               <thead>
               <tr>
@@ -300,6 +305,31 @@
         .catch( err=> {
           window.location.href = '/login'
         });
+      },
+      lockAsset(){ //锁定产品
+        var that = this;
+        var data = JSON.parse(that.localStorage.data).data;
+        var lockReason = '';
+        layer.confirm('是否锁定该资产包?', {icon: 1, title:'提示'}, function(index){
+          layer.close(index);
+          layer.prompt({title: '请输入锁定原因', formType: 2}, function(text, index){
+            axios({
+              method:'get',
+              url:"/cauds-exchange/asset/lock?assetId=" + that.product.assetId + '&reason='+ text
+              +'&account='+ data.userInfo.account,
+              headers: {
+                Authorization: 'Bearer ' + that.localStorage.token,
+                Accept:'application/json'
+              }
+            })
+            .then( rs=>  {
+              layer.msg('锁定成功',{time:2000});
+              location.href = '/apiDetail'
+            })
+            .catch( /*err => window.location.href = '/login'*/)
+          });
+          layer.close(index);
+        });     
       }
     }
   }
@@ -458,6 +488,23 @@
     margin-bottom:41px;
     font-size:21px;
     color:#333333;
+    display:flex;
+    justify-content:space-between;
+  }
+  .trade .title>div{
+    border:solid 1px #1fb5ad;
+    border-radius:10px;
+    width:128px;
+    height:35px;
+    font-size:18px;
+    color:#1fb5ad;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    cursor:pointer;
+  }
+  .trade .title>div>img{
+    margin-right:8px;
   }
   .table thead{
     background:#1fb5ad;

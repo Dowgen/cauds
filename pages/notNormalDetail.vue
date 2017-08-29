@@ -79,8 +79,9 @@
             <img :src="reAddPic">
           </div>
         </div>
-        <div class="deleteAsset" v-show="userType==1">
-          <button type="button" class="btn btn-danger" @click="deleteAsset">删除资产包</button>
+        <div class="deleteAsset">
+          <button v-show="userType==1" type="button" class="btn btn-danger" @click="deleteAsset">删除资产包</button>
+          <button v-show="userType==2" type="button" class="btn btn-success" @click="lockAsset" style="background-color:#1fb5ad">锁定资产包</button>
         </div>
       </div>
     </div>
@@ -190,6 +191,31 @@ export default {
         });
         layer.close(index);
       });
+    },
+    lockAsset(){ //锁定产品
+      var that = this;
+      var data = JSON.parse(that.localStorage.data).data;
+      var lockReason = '';
+      layer.confirm('是否锁定该资产包?', {icon: 1, title:'提示'}, function(index){
+        layer.close(index);
+        layer.prompt({title: '请输入锁定原因', formType: 2}, function(text, index){
+        axios({
+          method:'get',
+          url:"/cauds-exchange/asset/lock?assetId=" + that.product.assetId + '&reason='+ text
+          +'&account='+ data.userInfo.account,
+          headers: {
+            Authorization: 'Bearer ' + that.localStorage.token,
+            Accept:'application/json'
+          }
+        })
+        .then( rs=>  {
+          layer.msg('锁定成功',{time:2000});
+          location.href = '/apiDetail'
+        })
+        .catch( /*err => window.location.href = '/login'*/)
+      });
+        layer.close(index);
+      });     
     }
   }
 }
@@ -449,6 +475,7 @@ export default {
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-top: 50px;
 }
 .deleteAsset .btn{
   font-size: 16px;
