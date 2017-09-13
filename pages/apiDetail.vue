@@ -92,7 +92,7 @@
               <div class="right">
                 <svg width="90" height="90" viewBox="0 0 100 100" version="1.1" xmlns="http://www.w3.org/2000/svg">
                   <circle class="progress-background" r="50" cx="50" cy="50" fill="transparent"/>
-                  <circle class="progress-bar" r="50" cx="50" cy="50" fill="transparent" 
+                  <circle class="progress-bar" r="50" cx="50" cy="50" fill="transparent"
                   :stroke-dasharray="dashArray"
                   :stroke-dashoffset="(1-item.assetsPaid/item.assetSize)*dashArray"/>
                 </svg>
@@ -178,10 +178,10 @@
     beforeMount(){
       this.getAssetStatus();
       //动态获取当前时间毫秒数
-      var self = this;
+      var that = this;
       setInterval(getTime,1000)
       function getTime(){
-        self.nowTime = new Date().getTime();
+        that.nowTime = new Date().getTime();
       }
     },
     mounted() {
@@ -545,15 +545,15 @@
   .limit button{
     margin:10px 0;
     background: #1fb5ad;
-      text-align: center;
-      line-height: 32px;
-      height: 32px;
-      color: #fff;
-      font-size: 12px;
-      border: none;
-      width: 55px;
-      border-radius: 6px;
-      outline:none;
+    text-align: center;
+    line-height: 32px;
+    height: 32px;
+    color: #fff;
+    font-size: 12px;
+    border: none;
+    width: 55px;
+    border-radius: 6px;
+    outline:none;
   }
   .search{
     display: -webkit-box;

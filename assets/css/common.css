@@ -1,4 +1,12 @@
 @CHARSET "UTF-8";
+@font-face { 
+  font-family: AdobeHeitiStd-Regular; /*这里是说明调用来的字体名字*/ 
+  src: url('AdobeHeitiStd-Regular.otf'); /*这里是字体文件路径*/ 
+} 
+@font-face { 
+  font-family: PingFang-SC-Regular; /*这里是说明调用来的字体名字*/ 
+  src: url('PingFang-SC-Regular.ttf'); /*这里是字体文件路径*/ 
+} 
 [v-cloak] {
   display: none;
 }
@@ -25,10 +33,13 @@ a {
     color: #95A0AA;
     text-align: center;
 }
-
+#nav-left>div{
+    width:100%;
+}
 #myScrollspy{
     background: #222;
     padding: 0; 
+    width: 90%;
 }
 .nav-pills>li>a {
     border-radius: 0px;

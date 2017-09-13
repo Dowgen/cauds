@@ -20,7 +20,9 @@
                    <!-- <li><a href="#">总览</a></li>  
                    <li><a href="#">资产管理</a></li>   -->
                    <!-- <li><a href="/homepage">资产管理</a></li>   -->
-                   <li><a href="/apiDetail">资产广场</a></li>
+                   <li><a href="/square">{{whichSquare}}</a></li>
+                   <li><a href="/signed">签约机构</a></li>
+                   <li><a href="/apiDetail">资产管理</a></li>
                    <!-- <li><a href="/orderHistory">系统设置</a></li>      -->
                    <!-- <li><a href="#">系统设置</a></li>      -->
                    <li><a href="/ApiDocument">接口文档</a></li>
@@ -41,9 +43,22 @@
     import Hdp from '~components/Hdp.vue'
 
     export default {
-        components: {
-          Hdp
+      components: {
+        Hdp
+      },
+      data () {
+        return {
+          userType:'', //判断是资金方登陆还是资产方
+          whichSquare:''
         }
+      },
+      created () {
+        if(process.browser){
+          var userType = localStorage.userType;
+          if(userType == 1) this.whichSquare = '资金方广场'
+          else if(userType == 2) this.whichSquare = '资产方广场'
+        } 
+      }
     }
 </script>
 <style>

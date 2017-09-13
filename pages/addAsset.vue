@@ -64,7 +64,7 @@
               <div class="unit"></div>
             </div>
             <div class="information-box">
-              <div class="name">资金方机构名称：</div>
+              <div class="name">资金方名称：</div>
               <select style="width:270px" v-model="orgId" @change="getOrgName(orgId)">
                 <option v-for="item in orgList" :value="item.orgId">{{item.orgName}}</option>
               </select>
@@ -404,7 +404,7 @@ export default {
   margin-left:10px;
 }
 .procedure{
-  width:98%;
+  width:96%;
   height:87vh;
   background:#ffffff;
   border-radius:10px;
